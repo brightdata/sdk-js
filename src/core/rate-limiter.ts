@@ -38,10 +38,9 @@ export class RateLimiter {
 
         return new Promise<void>((resolve, reject) => {
             this.waitQueue.push({ resolve, reject });
-            logger.debug(
-                `throttled: ${this.waitQueue.length} queued`,
-                { queueLength: this.waitQueue.length },
-            );
+            logger.debug(`throttled: ${this.waitQueue.length} queued`, {
+                queueLength: this.waitQueue.length,
+            });
             if (!this.timer) {
                 this.scheduleNext();
             }

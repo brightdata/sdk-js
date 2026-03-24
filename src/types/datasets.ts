@@ -30,7 +30,10 @@ export interface SnapshotStatusResponse extends SnapshotMeta {
  */
 export interface SnapshotOperations {
     getStatus(snapshotId: string): Promise<SnapshotStatusResponse>;
-    fetch(snapshotId: string, options?: import('../schemas/datasets').SnapshotFetchOptions): Promise<unknown>;
+    fetch(
+        snapshotId: string,
+        options?: import('../schemas/datasets').SnapshotFetchOptions,
+    ): Promise<unknown>;
     download(
         snapshotId: string,
         options?: import('../schemas/datasets').SnapshotDownloadOptions,
@@ -45,7 +48,10 @@ export interface UrlFilter extends UnknownRecord {
 }
 
 export type { ChatgptFilter } from '../schemas/filters/chatgpt';
-export type { LinkedinProfileFilter, LinkedinJobFilter } from '../schemas/filters/linkedin';
+export type {
+    LinkedinProfileFilter,
+    LinkedinJobFilter,
+} from '../schemas/filters/linkedin';
 
 export type {
     AmazonCollectProductsFilter,

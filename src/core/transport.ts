@@ -69,11 +69,10 @@ export class Transport {
 
     private onBeforeExit = () => {
         if (!this.closed) {
-            // eslint-disable-next-line no-console
             console.warn(
                 '[brightdata-sdk] Transport was not closed. ' +
-                'Call client.close() or use "await using client = new bdclient()" ' +
-                'to avoid keeping the process alive.',
+                    'Call client.close() or use "await using client = new bdclient()" ' +
+                    'to avoid keeping the process alive.',
             );
         }
     };
@@ -111,7 +110,9 @@ export class Transport {
         opts: TransportRequestOptions = {},
     ): Promise<Dispatcher.ResponseData> {
         if (this.closed) {
-            throw new BRDError('Transport is closed — cannot make requests after close() has been called');
+            throw new BRDError(
+                'Transport is closed — cannot make requests after close() has been called',
+            );
         }
         const { timeout, ...restOpts } = opts;
         const mergedHeaders = { ...this.authHeaders, ...opts.headers };
@@ -135,7 +136,7 @@ export class Transport {
         this.log(opts.method, url, opts.query, opts.body);
 
         const method = opts.method || 'GET';
-        const urlStr = String(url);
+        const urlStr = typeof url === 'string' ? url : JSON.stringify(url);
         const start = Date.now();
         try {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
@@ -143,14 +144,24 @@ export class Transport {
             const durationMs = Date.now() - start;
             this.logger.debug(
                 `${method} ${urlStr} → ${response.statusCode} (${durationMs}ms)`,
-                { method, url: urlStr, statusCode: response.statusCode, durationMs },
+                {
+                    method,
+                    url: urlStr,
+                    statusCode: response.statusCode,
+                    durationMs,
+                },
             );
             return response;
         } catch (e: unknown) {
             const durationMs = Date.now() - start;
             this.logger.debug(
                 `${method} ${urlStr} → ERROR (${durationMs}ms): ${(e as Error).message}`,
-                { method, url: urlStr, durationMs, error: (e as Error).message },
+                {
+                    method,
+                    url: urlStr,
+                    durationMs,
+                    error: (e as Error).message,
+                },
             );
             if (e instanceof BRDError) throw e;
             const err = e as Error;
@@ -174,7 +185,9 @@ export class Transport {
         factory: Dispatcher.StreamFactory,
     ): Promise<Dispatcher.StreamData> {
         if (this.closed) {
-            throw new BRDError('Transport is closed — cannot make requests after close() has been called');
+            throw new BRDError(
+                'Transport is closed — cannot make requests after close() has been called',
+            );
         }
         const mergedHeaders = { ...this.authHeaders, ...opts.headers };
 
@@ -185,7 +198,7 @@ export class Transport {
         this.log(opts.method, url, opts.query, opts.body);
 
         const method = opts.method || 'GET';
-        const urlStr = String(url);
+        const urlStr = typeof url === 'string' ? url : JSON.stringify(url);
         const start = Date.now();
         try {
             /* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any */
@@ -209,7 +222,12 @@ export class Transport {
             const durationMs = Date.now() - start;
             this.logger.debug(
                 `STREAM ${method} ${urlStr} → ERROR (${durationMs}ms): ${(e as Error).message}`,
-                { method, url: urlStr, durationMs, error: (e as Error).message },
+                {
+                    method,
+                    url: urlStr,
+                    durationMs,
+                    error: (e as Error).message,
+                },
             );
             if (e instanceof BRDError) throw e;
             const err = e as Error;
