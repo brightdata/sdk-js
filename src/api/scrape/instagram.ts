@@ -1,6 +1,7 @@
 import type {
     DatasetOptions,
     DiscoverOptions,
+    OrchestrateOptions,
     UnknownRecord,
     InstagramDiscoverPostsByProfileURLFilter,
     InstagramDiscoverReelsByProfileURLFilter,
@@ -9,6 +10,10 @@ import {
     DatasetOptionsSchema,
     DatasetMixedInputSchema,
 } from '../../schemas/datasets';
+import {
+    InstagramDiscoverPostsByProfileURLFilterSchema,
+    InstagramDiscoverReelsByProfileURLFilterSchema,
+} from '../../schemas/filters/instagram';
 import { assertSchema } from '../../schemas/utils';
 import { BaseAPI, type BaseAPIOptions } from './base';
 
@@ -70,6 +75,11 @@ export class InstagramAPI extends BaseAPI {
         opt: DiscoverOptions,
     ) {
         this.logger.info(`discoverPostsByProfileURL for ${input.length} urls`);
+        if (input.length > 0 && typeof input[0] !== 'string') {
+            (input as InstagramDiscoverPostsByProfileURLFilter[]).forEach((item, i) =>
+                assertSchema(InstagramDiscoverPostsByProfileURLFilterSchema, item, `instagram.discoverPostsByProfileURL: invalid filter[${i}]`),
+            );
+        }
         const [safeInput, safeOpt] = assertInput(
             input,
             opt,
@@ -104,6 +114,11 @@ export class InstagramAPI extends BaseAPI {
         opt: DiscoverOptions,
     ) {
         this.logger.info(`discoverReelsByProfileURL for ${input.length} urls`);
+        if (input.length > 0 && typeof input[0] !== 'string') {
+            (input as InstagramDiscoverReelsByProfileURLFilter[]).forEach((item, i) =>
+                assertSchema(InstagramDiscoverReelsByProfileURLFilterSchema, item, `instagram.discoverReelsByProfileURL: invalid filter[${i}]`),
+            );
+        }
         const [safeInput, safeOpt] = assertInput(
             input,
             opt,
@@ -129,6 +144,11 @@ export class InstagramAPI extends BaseAPI {
         this.logger.info(
             `discoverAllReelsByProfileURL for ${input.length} urls`,
         );
+        if (input.length > 0 && typeof input[0] !== 'string') {
+            (input as InstagramDiscoverReelsByProfileURLFilter[]).forEach((item, i) =>
+                assertSchema(InstagramDiscoverReelsByProfileURLFilterSchema, item, `instagram.discoverAllReelsByProfileURL: invalid filter[${i}]`),
+            );
+        }
         const [safeInput, safeOpt] = assertInput(
             input,
             opt,
@@ -151,5 +171,37 @@ export class InstagramAPI extends BaseAPI {
         this.logger.info(`collectComments for ${input.length} urls`);
         const [safeInput, safeOpt] = assertInput(input, opt, 'collectComments');
         return this.run(safeInput, DATASET_ID.COMMENT, safeOpt);
+    }
+    /**
+     * Scrape Instagram profiles — one-call trigger+poll+fetch.
+     */
+    async profiles(input: string[], opts?: OrchestrateOptions) {
+        this.logger.info(`profiles (orchestrated) for ${input.length} urls`);
+        const [safeInput] = assertInput(input, {}, 'profiles');
+        return this.orchestrate(safeInput, DATASET_ID.PROFILE, opts);
+    }
+    /**
+     * Scrape Instagram posts — one-call trigger+poll+fetch.
+     */
+    async posts(input: string[], opts?: OrchestrateOptions) {
+        this.logger.info(`posts (orchestrated) for ${input.length} urls`);
+        const [safeInput] = assertInput(input, {}, 'posts');
+        return this.orchestrate(safeInput, DATASET_ID.POST, opts);
+    }
+    /**
+     * Scrape Instagram reels — one-call trigger+poll+fetch.
+     */
+    async reels(input: string[], opts?: OrchestrateOptions) {
+        this.logger.info(`reels (orchestrated) for ${input.length} urls`);
+        const [safeInput] = assertInput(input, {}, 'reels');
+        return this.orchestrate(safeInput, DATASET_ID.REEL, opts);
+    }
+    /**
+     * Scrape Instagram comments — one-call trigger+poll+fetch.
+     */
+    async comments(input: string[], opts?: OrchestrateOptions) {
+        this.logger.info(`comments (orchestrated) for ${input.length} urls`);
+        const [safeInput] = assertInput(input, {}, 'comments');
+        return this.orchestrate(safeInput, DATASET_ID.COMMENT, opts);
     }
 }

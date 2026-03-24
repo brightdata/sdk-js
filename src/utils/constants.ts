@@ -7,6 +7,9 @@ export const DEFAULT_TIMEOUT = 120_000;
 export const MAX_RETRIES = 3;
 export const RETRY_BACKOFF_FACTOR = 1.5;
 export const RETRY_STATUSES = [429, 500, 502, 503, 504];
+export const DEFAULT_CONNECTIONS = DEFAULT_CONCURRENCY * (MAX_RETRIES + 1); // 40
+export const DEFAULT_KEEP_ALIVE_TIMEOUT = 30_000;
+export const DEFAULT_KEEP_ALIVE_MAX_TIMEOUT = 120_000;
 
 const API_BASE_URL = 'https://api.brightdata.com';
 
@@ -20,6 +23,13 @@ export const API_ENDPOINT = {
     SNAPSHOT_DOWNLOAD: `${API_BASE_URL}/datasets/v3/snapshot/{snapshot_id}`,
     SNAPSHOT_DELIVER: `${API_BASE_URL}/datasets/v3/deliver/{snapshot_id}`,
     SNAPSHOT_CANCEL: `${API_BASE_URL}/datasets/v3/snapshot/{snapshot_id}/cancel`,
+
+    // Datasets service (pre-collected data — separate from /datasets/v3/ scraper endpoints)
+    DATASET_LIST: `${API_BASE_URL}/datasets/list`,
+    DATASET_METADATA: `${API_BASE_URL}/datasets/{dataset_id}/metadata`,
+    DATASET_FILTER: `${API_BASE_URL}/datasets/filter`,
+    DATASET_SNAPSHOT_STATUS: `${API_BASE_URL}/datasets/snapshots/{snapshot_id}`,
+    DATASET_SNAPSHOT_DOWNLOAD: `${API_BASE_URL}/datasets/snapshots/{snapshot_id}/download`,
 };
 
 export const DEFAULT_WEB_UNLOCKER_ZONE = 'sdk_unlocker';

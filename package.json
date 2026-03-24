@@ -14,11 +14,36 @@
             "types": "./dist/types/index.d.ts",
             "import": "./dist/esm/index.mjs",
             "require": "./dist/cjs/index.cjs"
+        },
+        "./scrapers": {
+            "types": "./dist/types/scrapers.d.ts",
+            "import": "./dist/esm/scrapers.mjs",
+            "require": "./dist/cjs/scrapers.cjs"
+        },
+        "./search": {
+            "types": "./dist/types/search.d.ts",
+            "import": "./dist/esm/search.mjs",
+            "require": "./dist/cjs/search.cjs"
+        },
+        "./datasets": {
+            "types": "./dist/types/datasets.d.ts",
+            "import": "./dist/esm/datasets.mjs",
+            "require": "./dist/cjs/datasets.cjs"
+        }
+    },
+    "typesVersions": {
+        "*": {
+            "scrapers": ["./dist/types/scrapers.d.ts"],
+            "search": ["./dist/types/search.d.ts"],
+            "datasets": ["./dist/types/datasets.d.ts"]
         }
     },
     "scripts": {
         "test": "vitest run",
         "test:dev": "vitest watch",
+        "test:integration": "vitest run tests/integration/",
+        "probe:unlocker": "npx tsx probe_tests/web_unlocker.ts",
+        "probe:serp": "npx tsx probe_tests/serp.ts",
         "lint": "eslint src/**/*.ts",
         "format": "prettier . --write",
         "typecheck": "tsc --noEmit --project tsconfig.json",

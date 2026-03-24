@@ -1,35 +1,33 @@
+import type { Dispatcher } from 'undici';
 import { API_ENDPOINT } from '../../utils/constants';
-import { APIError, BRDError } from '../../utils/errors';
-import {
-    request,
-    stream,
-    getDispatcher,
-    assertResponse,
-    throwInvalidStatus,
-} from '../../utils/net';
+import { DataNotReadyError } from '../../utils/errors';
+import { wrapAPIError } from '../../utils/error-utils';
+import { assertResponse, throwInvalidStatus } from '../../core/transport';
 import {
     routeDownloadStream,
     getFilename,
     getAbsAndEnsureDir,
 } from '../../utils/files';
-import { parseJSON, getRandomInt, sleep } from '../../utils/misc';
+import { parseJSON } from '../../utils/misc';
+import { pollUntilReady } from '../../utils/polling';
+import type { z } from 'zod';
 import {
     SnapshotIdSchema,
     SnapshotDownloadOptionsSchema,
-    SnapshotDownloadOptionsSchemaType,
+    SnapshotFetchOptionsSchema,
 } from '../../schemas/datasets';
+import type { SnapshotDownloadOptions, SnapshotFetchOptions } from '../../schemas/datasets';
 import { assertSchema } from '../../schemas/utils';
-import type {
-    SnapshotDownloadOptions,
-    SnapshotStatusResponse,
-} from '../../types/datasets';
+import type { SnapshotStatusResponse } from '../../types/datasets';
 import { BaseAPI, BaseAPIOptions } from './base';
 
 const assertDownloadStatus = (status: number) => {
     if (status < 202) return;
 
     if (status === 202) {
-        throw new BRDError('snapshot is not ready yet, please try again later');
+        throw new DataNotReadyError(
+            'snapshot is not ready yet, please try again later',
+        );
     }
 
     throwInvalidStatus(status, 'snapshot download failed');
@@ -74,6 +72,25 @@ export class SnapshotAPI extends BaseAPI {
         return this.#download(safeId, safeOpts);
     }
     /**
+     * Fetch snapshot results into memory.
+     * @param snapshotId - The unique identifier of the snapshot
+     * @param options - Optional fetch options (format)
+     * @returns A promise that resolves with the parsed snapshot data
+     */
+    async fetch(snapshotId: string, options?: SnapshotFetchOptions) {
+        const safeId = assertSchema(
+            SnapshotIdSchema,
+            snapshotId,
+            'snapshot.fetch: invalid snapshot id',
+        );
+        const safeOpts = assertSchema(
+            SnapshotFetchOptionsSchema,
+            options || {},
+            'snapshot.fetch: invalid options',
+        );
+        return this.#fetch(safeId, safeOpts);
+    }
+    /**
      * Cancel the dataset gathering process.
      * @param snapshotId - The unique identifier of the snapshot
      * @returns A promise that resolves once the snapshot is cancelled
@@ -95,21 +112,59 @@ export class SnapshotAPI extends BaseAPI {
         );
 
         try {
-            const response = await request(url, {
-                headers: this.authHeaders,
-                dispatcher: getDispatcher(),
-            });
+            const response = await this.transport.request(url, {});
             const responseTxt = await assertResponse(response);
             return parseJSON<SnapshotStatusResponse>(responseTxt);
         } catch (e: unknown) {
-            if (e instanceof BRDError) throw e;
-            throw new APIError(`operation failed: ${(e as Error).message}`);
+            wrapAPIError(e, 'snapshot.getStatus');
+        }
+    }
+
+    async #fetch(
+        snapshotId: string,
+        options: z.infer<typeof SnapshotFetchOptionsSchema>,
+    ): Promise<unknown> {
+        this.logger.info(
+            `fetching snapshot data for id ${snapshotId} into memory`,
+        );
+
+        const url = API_ENDPOINT.SNAPSHOT_DOWNLOAD.replace(
+            '{snapshot_id}',
+            snapshotId,
+        );
+
+        try {
+            const response = await this.transport.request(url, {
+                method: 'GET',
+                query: {
+                    format: options.format,
+                } as Record<string, unknown>,
+            });
+
+            // Must consume body before throwing so the connection is
+            // released back to undici's pool
+            if (response.statusCode === 202) {
+                await response.body.text();
+                throw new DataNotReadyError(
+                    'snapshot is not ready yet, please try again later',
+                );
+            }
+
+            const responseTxt = await assertResponse(response);
+
+            if (options.format === 'json') {
+                return parseJSON<unknown[]>(responseTxt);
+            }
+
+            return responseTxt;
+        } catch (e: unknown) {
+            wrapAPIError(e, 'snapshot.fetch', 'parsing response');
         }
     }
 
     async #download(
         snapshotId: string,
-        options: SnapshotDownloadOptionsSchemaType,
+        options: z.infer<typeof SnapshotDownloadOptionsSchema>,
     ): Promise<string> {
         this.logger.info(`fetching snapshot for id ${snapshotId}`);
 
@@ -130,48 +185,39 @@ export class SnapshotAPI extends BaseAPI {
                 `starting streaming snapshot ${snapshotId} data to ${target}`,
             );
 
-            await stream(
+            await this.transport.stream(
                 url,
                 {
                     method: 'GET',
-                    headers: this.authHeaders,
                     query: {
                         format: options.format,
                         compress: options.compress,
-                    },
+                    } as Record<string, unknown>,
                     opaque: {
                         filename: target,
                         assertStatus: assertDownloadStatus,
                     },
                 },
-                routeDownloadStream,
+                routeDownloadStream as unknown as Dispatcher.StreamFactory,
             );
 
             return target;
         } catch (e: unknown) {
-            if (e instanceof BRDError) throw e;
-            throw new APIError(`operation failed: ${(e as Error).message}`);
+            wrapAPIError(e, 'snapshot.download');
         }
     }
 
     async #awaitReady(snapshotId: string): Promise<void> {
         this.logger.info(`polling snapshot status for id ${snapshotId}`);
 
-        for (;;) {
-            const { status } = await this.#getStatus(snapshotId);
-
-            if (status === 'ready') break;
-            if (status === 'failed') {
-                throw new BRDError('snapshot generation failed');
-            }
-
-            const delayMs = getRandomInt(10_000, 30_000);
-            this.logger.info(
-                `snapshot ${snapshotId} is not ready yet, waiting for ${delayMs}ms`,
-            );
-
-            await sleep(delayMs);
-        }
+        await pollUntilReady(snapshotId, (id) => this.#getStatus(id), {
+            pollInterval: 10_000,
+            onStatus: (status, elapsed) => {
+                this.logger.info(
+                    `snapshot ${snapshotId} status: ${status} (${Math.round(elapsed / 1000)}s elapsed)`,
+                );
+            },
+        });
     }
 
     async #cancel(snapshotId: string) {
@@ -182,16 +228,13 @@ export class SnapshotAPI extends BaseAPI {
         );
 
         try {
-            const response = await request(url, {
+            const response = await this.transport.request(url, {
                 method: 'POST',
-                headers: this.authHeaders,
-                dispatcher: getDispatcher(),
             });
 
             await assertResponse(response);
         } catch (e: unknown) {
-            if (e instanceof BRDError) throw e;
-            throw new APIError(`operation failed: ${(e as Error).message}`);
+            wrapAPIError(e, 'snapshot.cancel');
         }
     }
 }
