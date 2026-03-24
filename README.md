@@ -1,10 +1,8 @@
 <img width="1300" height="200" alt="sdk-banner(1)" src="https://github.com/user-attachments/assets/c4a7857e-10dd-420b-947a-ed2ea5825cb8" />
 
-<h3>Bright Data JavaScript SDK providing easy and scalable methods for scraping, web search, and more.</h3>
+<h3>Bright Data JavaScript SDK providing easy and scalable methods for scraping, web search, datasets, and more.</h3>
 
 ## Installation [![@latest](https://img.shields.io/npm/v/@brightdata/sdk.svg)](https://www.npmjs.com/package/@brightdata/sdk)
-
-To install the package, open your terminal:
 
 ```bash
 npm install @brightdata/sdk
@@ -12,268 +10,307 @@ npm install @brightdata/sdk
 
 ## Quick start
 
-### 1. [Signup](https://brightdata.com/cp) and get your API key
+### 1. [Signup](https://brightdata.com/cp) and get your API token
 
-### 2. Initialize the Client
-
-Create a file named pizzaSearch.mjs with the follwing content:
+### 2. Initialize the client
 
 ```javascript
 import { bdclient } from '@brightdata/sdk';
 
 const client = new bdclient({
-    apiKey: '[your_api_key_here]', // can also be defined as BRIGHTDATA_API_KEY env variable
+    apiKey: '[your_api_token]', // or set BRIGHTDATA_API_TOKEN env variable
 });
 ```
 
 ### 3. Launch your first request
 
-Add our search function:
-
 ```javascript
-import { bdclient } from '@brightdata/sdk';
+// Scrape a webpage
+const html = await client.scrapeUrl('https://example.com');
+console.log(html);
 
-const client = new bdclient({
-    apiKey: '[your_api_key_here]', // can also be defined as BRIGHTDATA_API_KEY env variable
-});
-const result = await client.search('pizza restaurants');
-console.log(result);
+// Search the web
+const results = await client.search.google('pizza restaurants');
+console.log(results);
 ```
 
-And run:
+Don't forget to close when done:
 
-```bash
-node pizzaSearch.mjs
+```javascript
+await client.close();
 ```
 
 ## Features
 
-- **Web Scraping**: Scraping every website using unti bot-detection capabilities and proxy support
-- **Search Engine Results**: Support Searches on Google, Bing, and Yandex by query (includinig batch searches)
-- **Parallel Processing**: Concurrent processing for multiple URLs or queries
-- **Robust Error Handling**: Comprehensive error handling with retry logic
-- **Zone Management**: Automatic zone creation and management
-- **Multiple Output Formats**: HTML, JSON, and Markdown
-- **Dual build**: Both ESM and CommonJS supported
-- **TypeScript**: Fully typed for different combinations of input and output data
+- **Web Scraping** — Scrape any website using anti-bot detection bypass and proxy support
+- **Search Engine Results** — Google, Bing, and Yandex search with batch support
+- **Platform Scrapers** — Structured data collection from LinkedIn, Amazon, Instagram, TikTok, YouTube, Reddit, and more
+- **Datasets** — Access 19 pre-built datasets (Amazon, LinkedIn, Instagram, TikTok, X/Twitter) with query/download support
+- **Parallel Processing** — Concurrent processing for multiple URLs or queries
+- **Robust Error Handling** — Typed error classes with retry logic
+- **Zone Management** — Automatic zone creation and management
+- **Multiple Output Formats** — HTML, JSON, Markdown, and screenshots
+- **Dual Build** — Both ESM and CommonJS supported
+- **TypeScript** — Fully typed API with overloaded signatures
+- **Subpath Exports** — Tree-shakeable imports via `@brightdata/sdk/scrapers`, `@brightdata/sdk/search`, `@brightdata/sdk/datasets`
 
 ## Usage
 
 ### Scrape websites
 
 ```javascript
-// single URL - returns markdown string by default
-const result = await client.scrape('https://example.com');
-console.log(result); // output: web page html content
+// Single URL — returns HTML string by default
+const html = await client.scrapeUrl('https://example.com');
 
-// multiple URLs (parallel processing)
-const urls = [
+// Multiple URLs (parallel processing)
+const results = await client.scrapeUrl([
     'https://example1.com',
     'https://example2.com',
-    'https://example3.com',
-];
-const results = await client.scrape(urls);
-console.log(results); // returns array of html strings
+]);
 
-// different data formats available
-const htmlResult = await client.scrape('https://example.com', {
-    dataFormat: 'html', // returns raw HTML (default: 'html')
+// Get markdown content
+const md = await client.scrapeUrl('https://example.com', {
+    dataFormat: 'markdown',
 });
 
-const screenshotResult = await client.scrape('https://example.com', {
-    dataFormat: 'screenshot', // returns base64 screenshot image
+// Get structured JSON
+const data = await client.scrapeUrl('https://example.com', {
+    format: 'json',
 });
 
-// different response formats
-const jsonResult = await client.scrape('https://example.com', {
-    format: 'json', // returns parsed JSON object (default: 'raw' string)
+// Take a screenshot
+const screenshot = await client.scrapeUrl('https://example.com', {
+    dataFormat: 'screenshot',
 });
 
-// combined custom options
-const result = await client.scrape('https://example.com', {
-    format: 'raw', // 'raw' (default) or 'json'
-    dataFormat: 'markdown', // 'markdown' (default), 'raw', 'screenshot', etc.
-    country: 'gb', // two-letter country code
-    method: 'GET', // HTTP method (default: 'GET')
+// Full options
+const result = await client.scrapeUrl('https://example.com', {
+    format: 'raw',            // 'raw' (default) or 'json'
+    dataFormat: 'html',       // 'html' (default), 'markdown', 'screenshot'
+    country: 'gb',            // two-letter country code
+    method: 'GET',            // HTTP method
 });
 ```
 
-### Search Engine Results
+### Search engines
 
 ```javascript
-// single search query
-const result = await client.search('pizza restaurants');
-console.log(result);
+// Google search
+const results = await client.search.google('pizza restaurants');
 
-// multiple queries (parallel processing)
-const queries = ['pizza', 'restaurants', 'delivery'];
-const results = await client.search(queries);
-console.log(results);
+// Bing search
+const results = await client.search.bing('pizza restaurants');
 
-// different search engines
-const result = await client.search('pizza', {
-    searchEngine: 'google', // can also be 'yandex' or 'bing'
-});
-console.log(result);
+// Yandex search
+const results = await client.search.yandex('pizza restaurants');
 
-// custom options
-const results = await client.search(['pizza', 'sushi'], {
+// Batch search (parallel)
+const results = await client.search.google(['pizza', 'sushi', 'tacos']);
+
+// With options
+const results = await client.search.google('pizza', {
     country: 'gb',
-    format: 'raw',
+    format: 'json',
 });
-console.log(results);
 ```
 
-### Saving Results
+### Platform scrapers
+
+Collect structured data from popular platforms. Each platform supports sync collection (`collect*`) and async orchestrated scraping (trigger, poll, download).
 
 ```javascript
-// download scraped content
-const data = await client.scrape('https://example.com');
+// LinkedIn profiles
+const data = await client.scrape.linkedin.collectProfiles(
+    ['https://www.linkedin.com/in/satyanadella/'],
+    { format: 'json' },
+);
+
+// Amazon products
+const data = await client.scrape.amazon.collectProducts(
+    ['https://www.amazon.com/dp/B0D77BX8Y4'],
+    { format: 'json' },
+);
+
+// Instagram profiles
+const data = await client.scrape.instagram.collectProfiles(
+    ['https://www.instagram.com/natgeo/'],
+    { format: 'json' },
+);
+
+// TikTok profiles
+const data = await client.scrape.tiktok.collectProfiles(
+    ['https://www.tiktok.com/@tiktok'],
+    { format: 'json' },
+);
+
+// YouTube videos
+const data = await client.scrape.youtube.collectVideos(
+    ['https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
+    { format: 'json' },
+);
+
+// Reddit posts
+const data = await client.scrape.reddit.collectPosts(
+    ['https://www.reddit.com/r/technology/top/'],
+    { format: 'json' },
+);
+```
+
+**Orchestrated scraping** (async trigger → poll → download):
+
+```javascript
+const result = await client.scrape.linkedin.profiles(
+    ['https://www.linkedin.com/in/satyanadella/'],
+    { pollInterval: 5000, pollTimeout: 180_000 },
+);
+console.log(result.data);    // structured data
+console.log(result.status);  // 'ready'
+console.log(result.rowCount);
+```
+
+**Available platforms:** `linkedin`, `amazon`, `instagram`, `tiktok`, `youtube`, `reddit`, `facebook`, `chatGPT`, `digikey`, `perplexity`
+
+### Datasets
+
+Access pre-built datasets for querying and downloading structured data snapshots.
+
+```javascript
+const ds = client.datasets;
+
+// List all datasets available on your account
+const list = await ds.list();
+
+// Get field metadata for a dataset
+const meta = await ds.instagramProfiles.getMetadata();
+console.log(meta.fields); // [{ name, type, description }, ...]
+
+// Query a dataset (triggers a snapshot)
+const snapshotId = await ds.instagramProfiles.query(
+    { url: 'https://www.instagram.com/natgeo/' },
+    { records_limit: 10 },
+);
+
+// Check snapshot status
+const status = await ds.instagramProfiles.getStatus(snapshotId);
+console.log(status.status); // 'running' | 'ready' | ...
+
+// Download when ready
+const rows = await ds.instagramProfiles.download(snapshotId);
+```
+
+**Available datasets:**
+
+| Platform | Datasets |
+|----------|----------|
+| LinkedIn | `linkedinProfiles`, `linkedinCompanies` |
+| Amazon | `amazonProducts`, `amazonReviews`, `amazonSellers`, `amazonBestSellers`, `amazonProductsSearch`, `amazonProductsGlobal`, `amazonWalmart` |
+| Instagram | `instagramProfiles`, `instagramPosts`, `instagramComments`, `instagramReels` |
+| TikTok | `tiktokProfiles`, `tiktokPosts`, `tiktokComments`, `tiktokShop` |
+| X/Twitter | `xTwitterPosts`, `xTwitterProfiles` |
+
+### Saving results
+
+```javascript
+const data = await client.scrapeUrl('https://example.com');
 const filePath = await client.saveResults(data, {
     filename: 'results.json',
     format: 'json',
 });
-console.log(`Content saved to: ${filePath}`);
-```
-
-### Trigger dataset snapshot collection
-
-```javascript
-const res = await client.datasets.linkedin.discoverCompanyPosts([
-    { url: 'https://www.linkedin.com/company/bright-data' },
-]);
-
-// it will poll if snapshot is ready, and once it is - download it
-const filePath = await client.datasets.snapshot.download(res.snapshot_id, {
-    filename: './brd_posts.jsonl',
-    format: 'jsonl',
-});
-console.log(`Content saved to: ${filePath}`);
+console.log(`Saved to: ${filePath}`);
 ```
 
 ## Configuration
 
-### API Key
+### API Token
 
-- you can get your API key from [here](https://brightdata.com/cp/setting/users?=)
+Get your API token from [Bright Data Control Panel](https://brightdata.com/cp/setting/users?=).
 
 ### Environment Variables
 
-Set the following env variables (also configurable in client constructor)
-
 ```env
-BRIGHTDATA_API_KEY=your_bright_data_api_key
-BRIGHTDATA_WEB_UNLOCKER_ZONE=your_web_unlocker_zone  # Optional, if you have a specific zone
-BRIGHTDATA_SERP_ZONE=your_serp_zone                  # Optional, if you have a specific zone
+BRIGHTDATA_API_TOKEN=your_api_token
+BRIGHTDATA_WEB_UNLOCKER_ZONE=your_web_unlocker_zone  # Optional
+BRIGHTDATA_SERP_ZONE=your_serp_zone                  # Optional
+BRIGHTDATA_VERBOSE=1                                  # Optional, enable verbose logging
 ```
 
-### Manage Zones
+### Client Options
+
+```javascript
+const client = new bdclient({
+    apiKey: 'string',           // API token (or use BRIGHTDATA_API_TOKEN env var)
+    timeout: 120000,            // Request timeout in ms (1000–300000)
+    autoCreateZones: true,      // Auto-create zones if they don't exist
+    webUnlockerZone: 'string',  // Custom web unlocker zone name
+    serpZone: 'string',         // Custom SERP zone name
+    logLevel: 'INFO',           // 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL'
+    structuredLogging: true,    // Use structured JSON logging
+    verbose: false,             // Enable verbose logging
+    rateLimit: 0,               // Max requests per period (0 = unlimited)
+    ratePeriod: 1000,           // Rate limit period in ms
+});
+```
+
+### Resource Cleanup
+
+The client maintains HTTP connections. Always close when done:
+
+```javascript
+await client.close();
+
+// Or use Symbol.asyncDispose (TypeScript 5.2+)
+await using client = new bdclient();
+```
+
+### Constants
+
+| Constant               | Default  | Description                    |
+| ---------------------- | -------- | ------------------------------ |
+| `DEFAULT_CONCURRENCY`  | `10`     | Max parallel tasks             |
+| `DEFAULT_TIMEOUT`      | `120000` | Request timeout (milliseconds) |
+| `MAX_RETRIES`          | `3`      | Retry attempts on failure      |
+| `RETRY_BACKOFF_FACTOR` | `1.5`    | Exponential backoff multiplier |
+
+### Zone Management
 
 ```javascript
 const zones = await client.listZones();
 console.log(`Found ${zones.length} zones`);
 ```
 
-### Constants
+## Subpath Exports
 
-| Constant               | Default | Description                    |
-| ---------------------- | ------- | ------------------------------ |
-| `DEFAULT_CONCURRENCY`  | `10`    | Max parallel tasks             |
-| `DEFAULT_TIMEOUT`      | `30000` | Request timeout (milliseconds) |
-| `MAX_RETRIES`          | `3`     | Retry attempts on failure      |
-| `RETRY_BACKOFF_FACTOR` | `1.5`   | Exponential backoff multiplier |
-
-## API Reference
-
-### bdclient Class
+For tree-shaking or importing only what you need:
 
 ```javascript
-const client = new bdclient({
-    apiKey: 'string', // Your API key
-    autoCreateZones: true, // Auto-create zones if they don't exist
-    webUnlockerZone: 'string', // Custom web unlocker zone name
-    serpZone: 'string', // Custom SERP zone name
-    logLevel: 'INFO', // Log level
-    structuredLogging: true, // Use structured JSON logging
-    verbose: false, // Enable verbose logging
-});
+import { ScrapeRouter, LinkedinAPI } from '@brightdata/sdk/scrapers';
+import { SearchRouter } from '@brightdata/sdk/search';
+import { DatasetsClient, BaseDataset } from '@brightdata/sdk/datasets';
 ```
-
-### Key Methods
-
-### scrape(url, options)
-
-Scrapes a single URL or array of URLs using the Web Unlocker.
-
-**Parameters:**
-
-| Name                  | Type                                               | Description                                 | Default  |
-| --------------------- | -------------------------------------------------- | ------------------------------------------- | -------- |
-| `url`                 | `string` &#124; `string[]`                         | Single URL string or array of URLs          | —        |
-| `options.zone`        | `string`                                           | Zone identifier (auto-configured if `null`) | —        |
-| `options.format`      | `"json"` &#124; `"raw"`                            | Response format                             | `"raw"`  |
-| `options.method`      | `string`                                           | HTTP method                                 | `"GET"`  |
-| `options.country`     | `string`                                           | Two-letter country code                     | `""`     |
-| `options.dataFormat`  | `"markdown"` &#124; `"screenshot"` &#124; `"html"` | Returned content format                     | `"html"` |
-| `options.concurrency` | `number`                                           | Max parallel workers                        | `10`     |
-| `options.timeout`     | `number` (ms)                                      | Request timeout                             | `30000`  |
-
-### search(query, options)
-
-Searches using the SERP API
-
-**Parameters:**
-
-| Name                   | Type                                               | Description                                 | Default    |
-| ---------------------- | -------------------------------------------------- | ------------------------------------------- | ---------- |
-| `query`                | `string` &#124; `string[]`                         | Search query string or array of queries     | —          |
-| `options.searchEngine` | `"google"` &#124; `"bing"` &#124; `"yandex"`       | Search engine                               | `"google"` |
-| `options.zone`         | `string`                                           | Zone identifier (auto-configured if `null`) | —          |
-| `options.format`       | `"json"` &#124; `"raw"`                            | Response format                             | `"raw"`    |
-| `options.method`       | `string`                                           | HTTP method                                 | `"GET"`    |
-| `options.country`      | `string`                                           | Two-letter country code                     | `""`       |
-| `options.dataFormat`   | `"markdown"` &#124; `"screenshot"` &#124; `"html"` | Returned content format                     | `"html"`   |
-| `options.concurrency`  | `number`                                           | Max parallel workers                        | `10`       |
-| `options.timeout`      | `number` (ms)                                      | Request timeout                             | `30000`    |
-
-### saveResults(content, options)
-
-Save content to local file.
-
-**Parameters:**
-
-| Name               | Type                                  | Description                                | Default  |
-| ------------------ | ------------------------------------- | ------------------------------------------ | -------- |
-| `content`          | `any`                                 | Content to save                            | —        |
-| `options.filename` | `string`                              | Output filename (auto-generated if `null`) | —        |
-| `options.format`   | `string` (`"json"`, `"csv"`, `"txt"`) | File format                                | `"json"` |
-
-### listZones()
-
-List all active zones in your Bright Data account.
-
-**Returns:** Promise<Array<ZoneInfo>>
 
 ## Error Handling
 
-The SDK includes built-in input validation and retry logic:
+The SDK exports typed error classes that extend `BRDError`:
 
 ```javascript
+import { bdclient, ValidationError, AuthenticationError, BRDError } from '@brightdata/sdk';
+
 try {
-    const result = await client.scrape('https://example.com');
-    console.log(result);
+    const result = await client.scrapeUrl('https://example.com');
 } catch (error) {
-    if (error.name === 'ValidationError') {
+    if (error instanceof ValidationError) {
         console.error('Invalid input:', error.message);
-    } else {
-        console.error('API error:', error.message);
+    } else if (error instanceof AuthenticationError) {
+        console.error('Auth failed:', error.message);
+    } else if (error instanceof BRDError) {
+        console.error('SDK error:', error.message);
     }
 }
 ```
 
-## Development
+**Error types:** `ValidationError`, `AuthenticationError`, `ZoneError`, `NetworkError`, `NetworkTimeoutError`, `TimeoutError`, `APIError`, `DataNotReadyError`, `FSError`
 
-For development installation:
+## Development
 
 ```bash
 git clone https://github.com/brightdata/bright-data-sdk-js.git
@@ -284,15 +321,12 @@ npm run build:dev
 
 ## Commits conventions and releases
 
-We do use [Semantic Release](https://github.com/semantic-release/semantic-release) for automated releases and repo housekeeping. To allow Semantic Release do its job we follow some light commit message conventions:
-- use `fix:` prefix if commit fixes an issue (**triggers a PATCH release** `0.5.0` => `0.5.1`)
-- use `feat:` prefix if commit is part of a new feature (**triggers a MINOR release** `0.5.0` => `0.6.0`)
-- use `docs:` prefix if commit is updating a documentation (like README)
-- use `chore:` or no prefix for general purpose changes
-- use `BREAKING CHANGE:` in the commit footer if you need to release a new MAJOR version (`0.5.0` => `1.0.0`)
-
-  Examples: `fix: correct floating numbers bug`, `docs: fixed typo`
-
+We use [Semantic Release](https://github.com/semantic-release/semantic-release) for automated releases. Commit message conventions:
+- `fix:` — triggers a **PATCH** release (`0.5.0` => `0.5.1`)
+- `feat:` — triggers a **MINOR** release (`0.5.0` => `0.6.0`)
+- `feat!:` or `BREAKING CHANGE:` in footer — triggers a **MAJOR** release (`0.5.0` => `1.0.0`)
+- `docs:` — documentation only, no release
+- `chore:` — general maintenance, no release
 
 ## Support
 
