@@ -1,9 +1,9 @@
 import { PromisePool } from '@supercharge/promise-pool';
 import { API_ENDPOINT, DEFAULT_CONCURRENCY } from '../../utils/constants';
 import { getLogger } from '../../utils/logger';
-import { APIError, BRDError } from '../../utils/errors';
-import { request, getDispatcher, assertResponse } from '../../utils/net';
-import { getAuthHeaders } from '../../utils/auth';
+import { BRDError } from '../../utils/errors';
+import { wrapAPIError } from '../../utils/error-utils';
+import { Transport, assertResponse } from '../../core/transport';
 import { dropEmptyKeys, parseJSON } from '../../utils/misc';
 import { ZoneNameSchema } from '../../schemas/shared';
 import type { ZoneType } from '../../types/zones';
@@ -29,7 +29,7 @@ interface RequestQueryBody {
 }
 
 export interface RequestAPIOptions {
-    apiKey: string;
+    transport: Transport;
     zonesAPI: ZonesAPI;
     autoCreateZones: boolean;
     zone?: string;
@@ -39,14 +39,14 @@ export class RequestAPI {
     protected name!: string;
     protected zoneType!: ZoneType;
     private logger!: ReturnType<typeof getLogger>;
-    private authHeaders: ReturnType<typeof getAuthHeaders>;
+    private transport: Transport;
     private zone?: string;
     private zonesAPI: ZonesAPI;
     private autoCreateZones: boolean;
 
     constructor(opts: RequestAPIOptions) {
         if (opts.zone) this.zone = opts.zone;
-        this.authHeaders = getAuthHeaders(opts.apiKey);
+        this.transport = opts.transport;
         this.zonesAPI = opts.zonesAPI;
         this.autoCreateZones = opts.autoCreateZones;
     }
@@ -120,12 +120,14 @@ export class RequestAPI {
         const body = this.getRequestBody(val, zone, opt);
 
         try {
-            const response = await request(API_ENDPOINT.REQUEST, {
-                method: 'POST',
-                body: JSON.stringify(body),
-                headers: this.authHeaders,
-                dispatcher: getDispatcher({ timeout: opt.timeout }),
-            });
+            const response = await this.transport.request(
+                API_ENDPOINT.REQUEST,
+                {
+                    method: 'POST',
+                    body: JSON.stringify(body),
+                    timeout: opt.timeout,
+                },
+            );
 
             const responseTxt = await assertResponse(response);
             if (opt.format === 'json') {
@@ -133,8 +135,7 @@ export class RequestAPI {
             }
             return responseTxt;
         } catch (e: unknown) {
-            if (e instanceof BRDError) throw e;
-            throw new APIError(`operation failed: ${(e as Error).message}`);
+            wrapAPIError(e, 'request.handle');
         }
     }
     // prettier-ignore
@@ -176,10 +177,8 @@ export class RequestAPI {
 
             return res;
         } catch (error: unknown) {
-            const err = error as Error;
-            const msg = `batch operation failed: ${err.message}`;
-            this.logger.error(msg);
-            throw new APIError(msg);
+            this.logger.error(`batch operation failed: ${(error as Error).message}`);
+            wrapAPIError(error, 'request.handleBatch');
         }
     }
 }

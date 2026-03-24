@@ -1,12 +1,13 @@
 import type {
     DatasetOptions,
-    UnknownRecord,
+    OrchestrateOptions,
     ChatgptFilter,
 } from '../../types/datasets';
 import {
     DatasetOptionsSchema,
     ChatGPTInputSchema,
 } from '../../schemas/datasets';
+import { ChatgptFilterSchema } from '../../schemas/filters/chatgpt';
 import { assertSchema } from '../../schemas/utils';
 import { BaseAPI, type BaseAPIOptions } from './base';
 
@@ -15,11 +16,14 @@ const DATASET_ID = {
 };
 
 const assertInput = (
-    input: UnknownRecord[],
+    input: ChatgptFilter[],
     opts: DatasetOptions = {},
     fn: string,
 ) => {
     const prefix = `chatgpt.${fn}: `;
+    input.forEach((item, i) =>
+        assertSchema(ChatgptFilterSchema, item, `${prefix}invalid filter[${i}]`),
+    );
     return [
         assertSchema(ChatGPTInputSchema, input, `${prefix}invalid input`),
         assertSchema(DatasetOptionsSchema, opts, `${prefix}invalid options`),
@@ -42,5 +46,14 @@ export class ChatgptAPI extends BaseAPI {
         this.logger.info(`search for ${input.length} prompts`);
         const [safeInput, safeOpt] = assertInput(input, opt, 'search');
         return this.run(safeInput, DATASET_ID.CHATGPT, safeOpt);
+    }
+    /**
+     * ChatGPT prompt — one-call trigger+poll+fetch.
+     * Equivalent to Python's client.scrape.chatgpt.prompt(text).
+     */
+    async prompt(input: ChatgptFilter[], opts?: OrchestrateOptions) {
+        this.logger.info(`prompt (orchestrated) for ${input.length} prompts`);
+        const [safeInput] = assertInput(input, {}, 'prompt');
+        return this.orchestrate(safeInput, DATASET_ID.CHATGPT, opts);
     }
 }

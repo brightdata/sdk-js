@@ -11,7 +11,12 @@ const configPath = join(
 const pkg = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 
 export default {
-    input: 'src/index.ts',
+    input: [
+        'src/index.ts',
+        'src/scrapers.ts',
+        'src/search.ts',
+        'src/datasets.ts',
+    ],
     external: [...Object.keys(pkg.dependencies), /^node:/],
     output: [
         {
@@ -19,12 +24,14 @@ export default {
             format: 'esm',
             entryFileNames: '[name].mjs',
             preserveModules: true,
+            preserveModulesRoot: 'src',
         },
         {
             dir: 'dist/cjs',
             format: 'cjs',
             entryFileNames: '[name].cjs',
             preserveModules: true,
+            preserveModulesRoot: 'src',
         },
     ],
     plugins: [

@@ -1,6 +1,7 @@
 import type {
     DatasetOptions,
     DiscoverOptions,
+    OrchestrateOptions,
     UnknownRecord,
     UrlFilter,
     LinkedinJobFilter,
@@ -10,6 +11,10 @@ import {
     DatasetOptionsSchema,
     DatasetMixedInputSchema,
 } from '../../schemas/datasets';
+import {
+    LinkedinProfileFilterSchema,
+    LinkedinJobFilterSchema,
+} from '../../schemas/filters/linkedin';
 import { assertSchema } from '../../schemas/utils';
 import { BaseAPI, type BaseAPIOptions } from './base';
 
@@ -57,6 +62,9 @@ export class LinkedinAPI extends BaseAPI {
      */
     discoverProfiles(input: LinkedinProfileFilter[], opt: DiscoverOptions) {
         this.logger.info(`discoverProfiles for ${input.length} urls`);
+        input.forEach((item, i) =>
+            assertSchema(LinkedinProfileFilterSchema, item, `linkedin.discoverProfiles: invalid filter[${i}]`),
+        );
         const [safeInput, safeOpt] = assertInput(
             input,
             opt,
@@ -102,6 +110,9 @@ export class LinkedinAPI extends BaseAPI {
      * @returns a promise that resolves with snapshot meta
      */
     discoverJobs(input: LinkedinJobFilter[], opt: DiscoverOptions) {
+        input.forEach((item, i) =>
+            assertSchema(LinkedinJobFilterSchema, item, `linkedin.discoverJobs: invalid filter[${i}]`),
+        );
         const [safeInput, safeOpt] = assertInput(input, opt, 'discoverJobs');
         return this.run(safeInput, DATASET_ID.JOB, {
             ...safeOpt,
@@ -160,5 +171,37 @@ export class LinkedinAPI extends BaseAPI {
             type: 'discover_new',
             discoverBy: 'company_url',
         });
+    }
+    /**
+     * Scrape LinkedIn profiles — one-call trigger+poll+fetch.
+     */
+    async profiles(input: string[], opts?: OrchestrateOptions) {
+        this.logger.info(`profiles (orchestrated) for ${input.length} urls`);
+        const [safeInput] = assertInput(input, {}, 'profiles');
+        return this.orchestrate(safeInput, DATASET_ID.PROFILE, opts);
+    }
+    /**
+     * Scrape LinkedIn companies — one-call trigger+poll+fetch.
+     */
+    async companies(input: string[], opts?: OrchestrateOptions) {
+        this.logger.info(`companies (orchestrated) for ${input.length} urls`);
+        const [safeInput] = assertInput(input, {}, 'companies');
+        return this.orchestrate(safeInput, DATASET_ID.COMPANY, opts);
+    }
+    /**
+     * Scrape LinkedIn jobs — one-call trigger+poll+fetch.
+     */
+    async jobs(input: string[], opts?: OrchestrateOptions) {
+        this.logger.info(`jobs (orchestrated) for ${input.length} urls`);
+        const [safeInput] = assertInput(input, {}, 'jobs');
+        return this.orchestrate(safeInput, DATASET_ID.JOB, opts);
+    }
+    /**
+     * Scrape LinkedIn posts — one-call trigger+poll+fetch.
+     */
+    async posts(input: string[], opts?: OrchestrateOptions) {
+        this.logger.info(`posts (orchestrated) for ${input.length} urls`);
+        const [safeInput] = assertInput(input, {}, 'posts');
+        return this.orchestrate(safeInput, DATASET_ID.POST, opts);
     }
 }

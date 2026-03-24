@@ -1,4 +1,5 @@
 import { getLogger } from './logger';
+import { APIError } from './errors';
 
 export function parseJSON<T>(data: string): T {
     try {
@@ -12,7 +13,7 @@ export function parseJSON<T>(data: string): T {
                 data: data.substring(0, 200) + (data.length > 200 ? '...' : ''),
             },
         );
-        throw new Error('Failed to parse JSON response');
+        throw new APIError('Failed to parse JSON response');
     }
 }
 

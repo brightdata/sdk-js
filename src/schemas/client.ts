@@ -17,7 +17,12 @@ export const ClientOptionsSchema = z.object({
     verbose: z.boolean().optional(),
     structuredLogging: z.boolean().default(true),
     autoCreateZones: z.boolean().default(true),
+    rateLimit: z.number().min(0).optional(),
+    ratePeriod: z.number().positive().optional(),
+    timeout: z.number().min(1000).max(300_000).optional(),
 });
+
+export type BdClientOptions = z.input<typeof ClientOptionsSchema>;
 
 const URLSchema = z
     .httpUrl('invalid URL format')
