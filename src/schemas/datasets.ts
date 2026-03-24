@@ -12,12 +12,12 @@ const DatasetOptionsBaseSchema = z.object({
     format: SnapshotFormatSchema,
 });
 
-const DatasetOptionsSyncSchema = z.object({
+export const DatasetOptionsSyncSchema = z.object({
     ...DatasetOptionsBaseSchema.shape,
     async: z.literal(false).optional(),
 });
 
-const DatasetOptionsAsyncSchema = z.object({
+export const DatasetOptionsAsyncSchema = z.object({
     ...DatasetOptionsBaseSchema.shape,
     async: z.literal(true),
     type: z.literal('discover_new').optional(),
@@ -34,6 +34,14 @@ export const DatasetOptionsSchema = z.discriminatedUnion('async', [
     DatasetOptionsAsyncSchema,
     DatasetOptionsSyncSchema,
 ]);
+
+export type DatasetOptionsSync = z.input<typeof DatasetOptionsSyncSchema>;
+export type DatasetOptionsAsync = z.input<typeof DatasetOptionsAsyncSchema>;
+export type DatasetOptions = z.input<typeof DatasetOptionsSchema>;
+export type DiscoverOptions = Omit<
+    DatasetOptions,
+    'async' | 'discoverBy' | 'type'
+>;
 
 const DatasetURLInputSchema = z.array(z.httpUrl());
 const DatasetInputSchema = z.array(z.record(z.string(), z.any()));
@@ -60,9 +68,20 @@ export const SnapshotDownloadOptionsSchema = z.object({
     statusPolling: z.boolean().default(true),
 });
 
-export type SnapshotDownloadOptionsSchemaType = z.infer<
+export type SnapshotDownloadOptions = z.input<
     typeof SnapshotDownloadOptionsSchema
 >;
+
+const SnapshotFetchFormatSchema = z
+    .enum(['json', 'csv', 'ndjson', 'jsonl'])
+    .transform((v) => (v === 'ndjson' ? 'jsonl' : v))
+    .default('json');
+
+export const SnapshotFetchOptionsSchema = z.object({
+    format: SnapshotFetchFormatSchema,
+});
+
+export type SnapshotFetchOptions = z.input<typeof SnapshotFetchOptionsSchema>;
 
 export const SnapshotIdSchema = z
     .string()

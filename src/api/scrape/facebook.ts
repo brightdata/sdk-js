@@ -1,6 +1,7 @@
 import type {
     DatasetOptions,
     DiscoverOptions,
+    OrchestrateOptions,
     UnknownRecord,
     FacebookCollectUserPostsFilter,
     FacebookCollectGroupPostsFilter,
@@ -17,6 +18,18 @@ import {
     DatasetOptionsSchema,
     DatasetMixedInputSchema,
 } from '../../schemas/datasets';
+import {
+    FacebookCollectUserPostsFilterSchema,
+    FacebookCollectGroupPostsFilterSchema,
+    FacebookCollectPostCommentsFilterSchema,
+    FacebookCompanyReviewsFilterSchema,
+    FacebookDiscoverPostsByUserNameFilterSchema,
+    FacebookDiscoverMarketplaceItemsByKeywordFilterSchema,
+    FacebookDiscoverMarketplaceItemsByURLFilterSchema,
+    FacebookDiscoverEventsByURLFilterSchema,
+    FacebookDiscoverEventsByVenueFilterSchema,
+} from '../../schemas/filters/facebook';
+import { InstagramDiscoverReelsByProfileURLFilterSchema } from '../../schemas/filters/instagram';
 import { assertSchema } from '../../schemas/utils';
 import { BaseAPI, type BaseAPIOptions } from './base';
 
@@ -61,6 +74,11 @@ export class FacebookAPI extends BaseAPI {
         opt: DatasetOptions,
     ) {
         this.logger.info(`collectUserPosts for ${input.length} inputs`);
+        if (input.length > 0 && typeof input[0] !== 'string') {
+            (input as FacebookCollectUserPostsFilter[]).forEach((item, i) =>
+                assertSchema(FacebookCollectUserPostsFilterSchema, item, `facebook.collectUserPosts: invalid filter[${i}]`),
+            );
+        }
         const [safeInput, safeOpt] = assertInput(
             input,
             opt,
@@ -79,6 +97,9 @@ export class FacebookAPI extends BaseAPI {
         opt: DiscoverOptions,
     ) {
         this.logger.info(`discoverPostsByUserName for ${input.length} urls`);
+        input.forEach((item, i) =>
+            assertSchema(FacebookDiscoverPostsByUserNameFilterSchema, item, `facebook.discoverPostsByUserName: invalid filter[${i}]`),
+        );
         const [safeInput, safeOpt] = assertInput(
             input,
             opt,
@@ -102,6 +123,11 @@ export class FacebookAPI extends BaseAPI {
         opt: DatasetOptions,
     ) {
         this.logger.info(`collectGroupPosts for ${input.length} inputs`);
+        if (input.length > 0 && typeof input[0] !== 'string') {
+            (input as FacebookCollectGroupPostsFilter[]).forEach((item, i) =>
+                assertSchema(FacebookCollectGroupPostsFilterSchema, item, `facebook.collectGroupPosts: invalid filter[${i}]`),
+            );
+        }
         const [safeInput, safeOpt] = assertInput(
             input,
             opt,
@@ -120,6 +146,11 @@ export class FacebookAPI extends BaseAPI {
         opt: DatasetOptions,
     ) {
         this.logger.info(`collectPostComments for ${input.length} inputs`);
+        if (input.length > 0 && typeof input[0] !== 'string') {
+            (input as FacebookCollectPostCommentsFilter[]).forEach((item, i) =>
+                assertSchema(FacebookCollectPostCommentsFilterSchema, item, `facebook.collectPostComments: invalid filter[${i}]`),
+            );
+        }
         const [safeInput, safeOpt] = assertInput(
             input,
             opt,
@@ -158,6 +189,9 @@ export class FacebookAPI extends BaseAPI {
         this.logger.info(
             `discoverMarketplaceItemsByKeyword for ${input.length} urls`,
         );
+        input.forEach((item, i) =>
+            assertSchema(FacebookDiscoverMarketplaceItemsByKeywordFilterSchema, item, `facebook.discoverMarketplaceItemsByKeyword: invalid filter[${i}]`),
+        );
         const [safeInput, safeOpt] = assertInput(
             input,
             opt,
@@ -183,6 +217,11 @@ export class FacebookAPI extends BaseAPI {
         this.logger.info(
             `discoverMarketplaceItemsByURL for ${input.length} urls`,
         );
+        if (input.length > 0 && typeof input[0] !== 'string') {
+            (input as FacebookDiscoverMarketplaceItemsByURLFilter[]).forEach((item, i) =>
+                assertSchema(FacebookDiscoverMarketplaceItemsByURLFilterSchema, item, `facebook.discoverMarketplaceItemsByURL: invalid filter[${i}]`),
+            );
+        }
         const [safeInput, safeOpt] = assertInput(
             input,
             opt,
@@ -228,6 +267,11 @@ export class FacebookAPI extends BaseAPI {
         opt: DiscoverOptions,
     ) {
         this.logger.info(`discoverEventsByURL for ${input.length} urls`);
+        if (input.length > 0 && typeof input[0] !== 'string') {
+            (input as FacebookDiscoverEventsByURLFilter[]).forEach((item, i) =>
+                assertSchema(FacebookDiscoverEventsByURLFilterSchema, item, `facebook.discoverEventsByURL: invalid filter[${i}]`),
+            );
+        }
         const [safeInput, safeOpt] = assertInput(
             input,
             opt,
@@ -251,6 +295,11 @@ export class FacebookAPI extends BaseAPI {
         opt: DiscoverOptions,
     ) {
         this.logger.info(`discoverEventsByVenue for ${input.length} venues`);
+        if (input.length > 0 && typeof input[0] !== 'string') {
+            (input as FacebookDiscoverEventsByVenueFilter[]).forEach((item, i) =>
+                assertSchema(FacebookDiscoverEventsByVenueFilterSchema, item, `facebook.discoverEventsByVenue: invalid filter[${i}]`),
+            );
+        }
         const [safeInput, safeOpt] = assertInput(
             input,
             opt,
@@ -274,6 +323,11 @@ export class FacebookAPI extends BaseAPI {
         opt: DatasetOptions,
     ) {
         this.logger.info(`collectUserReels for ${input.length} inputs`);
+        if (input.length > 0 && typeof input[0] !== 'string') {
+            (input as InstagramDiscoverReelsByProfileURLFilter[]).forEach((item, i) =>
+                assertSchema(InstagramDiscoverReelsByProfileURLFilterSchema, item, `facebook.collectUserReels: invalid filter[${i}]`),
+            );
+        }
         const [safeInput, safeOpt] = assertInput(
             input,
             opt,
@@ -292,6 +346,11 @@ export class FacebookAPI extends BaseAPI {
         opt: DatasetOptions,
     ) {
         this.logger.info(`collectCompanyReviews for ${input.length} inputs`);
+        if (input.length > 0 && typeof input[0] !== 'string') {
+            (input as FacebookCompanyReviewsFilter[]).forEach((item, i) =>
+                assertSchema(FacebookCompanyReviewsFilterSchema, item, `facebook.collectCompanyReviews: invalid filter[${i}]`),
+            );
+        }
         const [safeInput, safeOpt] = assertInput(
             input,
             opt,
@@ -316,5 +375,55 @@ export class FacebookAPI extends BaseAPI {
             'collectUserProfiles',
         );
         return this.run(safeInput, DATASET_ID.PROFILES_USER, safeOpt);
+    }
+    /**
+     * Scrape Facebook user posts — one-call trigger+poll+fetch.
+     */
+    async userPosts(
+        input: string[] | FacebookCollectUserPostsFilter[],
+        opts?: OrchestrateOptions,
+    ) {
+        this.logger.info(`userPosts (orchestrated) for ${input.length} inputs`);
+        const [safeInput] = assertInput(input, {}, 'userPosts');
+        return this.orchestrate(safeInput, DATASET_ID.POSTS_USER, opts);
+    }
+    /**
+     * Scrape Facebook group posts — one-call trigger+poll+fetch.
+     */
+    async groupPosts(
+        input: string[] | FacebookCollectGroupPostsFilter[],
+        opts?: OrchestrateOptions,
+    ) {
+        this.logger.info(
+            `groupPosts (orchestrated) for ${input.length} inputs`,
+        );
+        const [safeInput] = assertInput(input, {}, 'groupPosts');
+        return this.orchestrate(safeInput, DATASET_ID.POSTS_GROUP, opts);
+    }
+    /**
+     * Scrape Facebook post comments — one-call trigger+poll+fetch.
+     */
+    async postComments(
+        input: string[] | FacebookCollectPostCommentsFilter[],
+        opts?: OrchestrateOptions,
+    ) {
+        this.logger.info(
+            `postComments (orchestrated) for ${input.length} inputs`,
+        );
+        const [safeInput] = assertInput(input, {}, 'postComments');
+        return this.orchestrate(safeInput, DATASET_ID.COMMENTS, opts);
+    }
+    /**
+     * Scrape Facebook company reviews — one-call trigger+poll+fetch.
+     */
+    async companyReviews(
+        input: string[] | FacebookCompanyReviewsFilter[],
+        opts?: OrchestrateOptions,
+    ) {
+        this.logger.info(
+            `companyReviews (orchestrated) for ${input.length} inputs`,
+        );
+        const [safeInput] = assertInput(input, {}, 'companyReviews');
+        return this.orchestrate(safeInput, DATASET_ID.REVIEWS_COMPANY, opts);
     }
 }

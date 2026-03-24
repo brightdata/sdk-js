@@ -1,148 +1,114 @@
+import { Transport, assertResponse } from '../../core/transport';
 import { API_ENDPOINT } from '../../utils/constants';
+import { parseJSON } from '../../utils/misc';
 import { getLogger } from '../../utils/logger';
-import { APIError, BRDError } from '../../utils/errors';
-import { request, getDispatcher, assertResponse } from '../../utils/net';
-import { getAuthHeaders } from '../../utils/auth';
-import { dropEmptyKeys, parseJSON } from '../../utils/misc';
+import { wrapAPIError } from '../../utils/error-utils';
+import { pollUntilReady } from '../../utils/polling';
 import type {
-    DatasetOptions,
-    UnknownRecord,
-    SnapshotFormat,
-    SnapshotMeta,
-} from '../../types/datasets';
+    DatasetMetadata,
+    DatasetSnapshotStatus,
+    DatasetDownloadOptions,
+    DatasetQueryOptions,
+} from './types';
 
-interface WebhookDisabled {
-    notify: undefined;
-}
+export abstract class BaseDataset {
+    abstract readonly datasetId: string;
+    abstract readonly name: string;
+    protected transport: Transport;
+    private _logger?: ReturnType<typeof getLogger>;
 
-interface WebhookEnabled {
-    notify: string;
-    endpoint: string;
-    auth_header?: string;
-    uncompressed_webhook?: boolean;
-}
-
-type WebhookSettings = WebhookEnabled | WebhookDisabled;
-
-interface DatasetsQueryParamsSync {
-    dataset_id: string;
-    custom_output_fields?: string;
-    include_errors?: boolean;
-    format?: SnapshotFormat;
-}
-
-type DatasetsQueryParamsAsync = DatasetsQueryParamsSync & {
-    type?: 'discover_new';
-    discover_by?: string;
-    limit_per_input?: number;
-    limit_multiple_results?: number;
-} & WebhookSettings;
-
-interface DatasetsQueryBodySync {
-    input: UnknownRecord[];
-    custom_output_fields?: string;
-}
-
-type DatasetsQueryBodyAsync = UnknownRecord[];
-
-export interface BaseAPIOptions {
-    apiKey: string;
-}
-
-export class BaseAPI {
-    protected name!: string;
-    protected logger!: ReturnType<typeof getLogger>;
-    protected authHeaders: ReturnType<typeof getAuthHeaders>;
-
-    constructor(opts: BaseAPIOptions) {
-        this.authHeaders = getAuthHeaders(opts.apiKey);
+    constructor(opts: { transport: Transport }) {
+        this.transport = opts.transport;
     }
 
-    init() {
-        this.logger = getLogger(`api.datasets.${this.name}`);
-    }
-
-    #getRequestBody(
-        input: UnknownRecord[],
-        opt: DatasetOptions,
-    ): DatasetsQueryBodySync | DatasetsQueryBodyAsync {
-        return opt.async ? input : { input };
-    }
-
-    #getRequestQuery(
-        datasetId: string,
-        opt: DatasetOptions,
-    ): DatasetsQueryParamsSync | DatasetsQueryParamsAsync {
-        let res: DatasetsQueryParamsAsync | DatasetsQueryParamsSync;
-
-        if (opt.async) {
-            res = {
-                dataset_id: datasetId,
-                custom_output_fields: opt.customOutputFields,
-                include_errors: opt.includeErrors,
-                format: opt.format,
-                discover_by: opt.discoverBy,
-                type: opt.type,
-                limit_per_input: opt.limitPerInput,
-                limit_multiple_results: opt.limitMultipleResults,
-                notify: opt.notify,
-                endpoint: opt.endpoint,
-                auth_header: opt.authHeader,
-                uncompressed_webhook: opt.uncompressedWebhook,
-            };
-        } else {
-            res = {
-                dataset_id: datasetId,
-                custom_output_fields: opt.customOutputFields,
-                include_errors: opt.includeErrors,
-                format: opt.format,
-            };
+    protected get logger() {
+        if (!this._logger) {
+            this._logger = getLogger(`datasets.${this.name}`);
         }
-
-        dropEmptyKeys(res as Record<keyof DatasetsQueryParamsSync, unknown>);
-
-        return res;
+        return this._logger;
     }
 
-    protected async run(
-        val: UnknownRecord[],
-        datasetId: string,
-        opt: DatasetOptions,
-    ) {
-        const body = this.#getRequestBody(val, opt);
-
-        const endpoint = opt.async
-            ? API_ENDPOINT.SCRAPE_ASYNC
-            : API_ENDPOINT.SCRAPE_SYNC;
-
+    async getMetadata(): Promise<DatasetMetadata> {
+        this.logger.debug('getMetadata');
+        const url = API_ENDPOINT.DATASET_METADATA.replace(
+            '{dataset_id}',
+            this.datasetId,
+        );
         try {
-            const response = await request(endpoint, {
-                method: 'POST',
-                query: this.#getRequestQuery(datasetId, opt),
-                body: JSON.stringify(body),
-                headers: this.authHeaders,
-                dispatcher: getDispatcher(),
-            });
-
-            const responseTxt = await assertResponse(response);
-
-            if (opt.async) {
-                return parseJSON<SnapshotMeta>(responseTxt);
-            } else if (response.statusCode === 202) {
-                this.logger.info(
-                    'request exeeded sync request timeout, converted to async',
-                );
-                return parseJSON<SnapshotMeta>(responseTxt);
-            }
-
-            if (opt.format === 'json') {
-                return parseJSON<UnknownRecord[]>(responseTxt);
-            }
-
-            return responseTxt;
+            const response = await this.transport.request(url);
+            const text = await assertResponse(response);
+            return parseJSON<DatasetMetadata>(text);
         } catch (e: unknown) {
-            if (e instanceof BRDError) throw e;
-            throw new APIError(`operation failed: ${(e as Error).message}`);
+            wrapAPIError(e, `datasets.${this.name}.getMetadata`);
+        }
+    }
+
+    async query(
+        filter: Record<string, unknown>,
+        opts?: DatasetQueryOptions,
+    ): Promise<string> {
+        this.logger.debug('query', { filter });
+        try {
+            const body: Record<string, unknown> = {
+                dataset_id: this.datasetId,
+                filter,
+            };
+            if (opts?.records_limit) {
+                body.records_limit = opts.records_limit;
+            }
+            const response = await this.transport.request(
+                API_ENDPOINT.DATASET_FILTER,
+                {
+                    method: 'POST',
+                    body: JSON.stringify(body),
+                },
+            );
+            const text = await assertResponse(response);
+            const result = parseJSON<{ snapshot_id: string }>(text);
+            return result.snapshot_id;
+        } catch (e: unknown) {
+            wrapAPIError(e, `datasets.${this.name}.query`);
+        }
+    }
+
+    async sample(opts?: DatasetQueryOptions): Promise<string> {
+        this.logger.debug('sample');
+        return this.query({}, opts);
+    }
+
+    async getStatus(snapshotId: string): Promise<DatasetSnapshotStatus> {
+        this.logger.debug('getStatus', { snapshotId });
+        const url = API_ENDPOINT.DATASET_SNAPSHOT_STATUS.replace(
+            '{snapshot_id}',
+            snapshotId,
+        );
+        try {
+            const response = await this.transport.request(url);
+            const text = await assertResponse(response);
+            return parseJSON<DatasetSnapshotStatus>(text);
+        } catch (e: unknown) {
+            wrapAPIError(e, `datasets.${this.name}.getStatus`);
+        }
+    }
+
+    async download(
+        snapshotId: string,
+        opts?: DatasetDownloadOptions,
+    ): Promise<unknown[]> {
+        this.logger.debug('download', { snapshotId });
+        try {
+            await pollUntilReady(snapshotId, (id) => this.getStatus(id));
+            const url = API_ENDPOINT.DATASET_SNAPSHOT_DOWNLOAD.replace(
+                '{snapshot_id}',
+                snapshotId,
+            );
+            const query: Record<string, unknown> = {};
+            if (opts?.format) query.format = opts.format;
+            const response = await this.transport.request(url, { query });
+            const text = await assertResponse(response);
+            return parseJSON<unknown[]>(text);
+        } catch (e: unknown) {
+            wrapAPIError(e, `datasets.${this.name}.download`);
         }
     }
 }

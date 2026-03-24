@@ -10,3 +10,6 @@ export const SaveOptionsSchema = z.object({
     filename: FilenameSchema.optional(),
     format: ContentFormatSchema,
 });
+
+export type SaveOptions = z.input<typeof SaveOptionsSchema>;
+export type ContentFormat = 'json' | 'txt';

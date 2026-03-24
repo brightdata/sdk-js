@@ -1,89 +1,122 @@
 {
-    "name": "@brightdata/sdk",
-    "version": "0.0.0-managed-by-semantic-release",
-    "publishConfig": {
-        "access": "public"
+  "name": "@brightdata/sdk",
+  "version": "0.0.0-managed-by-semantic-release",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "JavaScript SDK for Bright Data Web Scraping and SERP APIs",
+  "main": "dist/cjs/index.cjs",
+  "module": "dist/esm/index.mjs",
+  "types": "dist/types/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.mjs",
+      "require": "./dist/cjs/index.cjs"
     },
-    "description": "JavaScript SDK for Bright Data Web Scraping and SERP APIs",
-    "main": "dist/cjs/index.cjs",
-    "module": "dist/esm/index.mjs",
-    "types": "dist/types/index.d.ts",
-    "type": "module",
-    "exports": {
-        ".": {
-            "types": "./dist/types/index.d.ts",
-            "import": "./dist/esm/index.mjs",
-            "require": "./dist/cjs/index.cjs"
-        }
+    "./scrapers": {
+      "types": "./dist/types/scrapers.d.ts",
+      "import": "./dist/esm/scrapers.mjs",
+      "require": "./dist/cjs/scrapers.cjs"
     },
-    "scripts": {
-        "test": "vitest run",
-        "test:dev": "vitest watch",
-        "lint": "eslint src/**/*.ts",
-        "format": "prettier . --write",
-        "typecheck": "tsc --noEmit --project tsconfig.json",
-        "sanity": "npm run lint && npm run typecheck",
-        "build": "npm run build:clean && rollup -c && npm run build:dts",
-        "build:dts": "tsc --project tsconfig.dts.json",
-        "build:clean": "rm -rf ./dist",
-        "build:dev": "npm run build:clean && rollup --watch -c",
-        "build:dev:dts": "tsc --project tsconfig.dts.json --watch",
-        "prepublishOnly": "npm test && npm run sanity && npm run build",
-        "release": "semantic-release"
+    "./search": {
+      "types": "./dist/types/search.d.ts",
+      "import": "./dist/esm/search.mjs",
+      "require": "./dist/cjs/search.cjs"
     },
-    "keywords": [
-        "brightdata",
-        "web scraping",
-        "proxy",
-        "serp",
-        "search",
-        "data extraction",
-        "web unlocker"
-    ],
-    "author": "Bright Data <support@brightdata.com>",
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/brightdata/bright-data-sdk-js.git"
-    },
-    "bugs": {
-        "url": "https://github.com/brightdata/bright-data-sdk-js/issues"
-    },
-    "homepage": "https://github.com/brightdata/bright-data-sdk-js#readme",
-    "engines": {
-        "node": ">=20.0.0"
-    },
-    "dependencies": {
-        "@supercharge/promise-pool": "^3.2.0",
-        "undici": "^7.16.0",
-        "zod": "^4.1.11"
-    },
-    "devDependencies": {
-        "@eslint/js": "^9.37.0",
-        "@rollup/plugin-replace": "^6.0.2",
-        "@rollup/plugin-typescript": "^12.1.4",
-        "@types/node": "^24.5.1",
-        "dotenv": "^17.2.3",
-        "eslint": "^9.37.0",
-        "eslint-config-prettier": "^10.1.8",
-        "eslint-plugin-prettier": "^5.5.4",
-        "globals": "^16.4.0",
-        "jiti": "^2.6.1",
-        "prettier": "^3.6.2",
-        "rollup": "^4.52.4",
-        "tslib": "^2.8.1",
-        "typescript": "^5.9.3",
-        "typescript-eslint": "^8.45.0",
-        "vitest": "^3.2.4",
-        "@semantic-release/commit-analyzer": "^13.0.1",
-        "@semantic-release/github": "^11.0.6",
-        "@semantic-release/npm": "^12.0.2",
-        "@semantic-release/release-notes-generator": "^14.1.0"
-    },
-    "files": [
-        "dist/",
-        "README.md",
-        "package.json",
-        "LICENSE"
-    ]
+    "./datasets": {
+      "types": "./dist/types/datasets.d.ts",
+      "import": "./dist/esm/datasets.mjs",
+      "require": "./dist/cjs/datasets.cjs"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "scrapers": [
+        "./dist/types/scrapers.d.ts"
+      ],
+      "search": [
+        "./dist/types/search.d.ts"
+      ],
+      "datasets": [
+        "./dist/types/datasets.d.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:dev": "vitest watch",
+    "test:integration": "vitest run tests/integration/",
+    "probe:unlocker": "npx tsx probe_tests/web_unlocker.ts",
+    "probe:serp": "npx tsx probe_tests/serp.ts",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier . --write",
+    "typecheck": "tsc --noEmit --project tsconfig.json",
+    "sanity": "npm run lint && npm run typecheck",
+    "build": "npm run build:clean && rollup -c && npm run build:dts",
+    "build:dts": "tsc --project tsconfig.dts.json",
+    "build:clean": "rm -rf ./dist",
+    "build:dev": "npm run build:clean && rollup --watch -c",
+    "build:dev:dts": "tsc --project tsconfig.dts.json --watch",
+    "prepublishOnly": "npm test && npm run sanity && npm run build",
+    "release": "semantic-release",
+    "prepare": "husky"
+  },
+  "keywords": [
+    "brightdata",
+    "web scraping",
+    "proxy",
+    "serp",
+    "search",
+    "data extraction",
+    "web unlocker"
+  ],
+  "author": "Bright Data <support@brightdata.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/brightdata/bright-data-sdk-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/brightdata/bright-data-sdk-js/issues"
+  },
+  "homepage": "https://github.com/brightdata/bright-data-sdk-js#readme",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@supercharge/promise-pool": "^3.2.0",
+    "undici": "^7.16.0",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.37.0",
+    "@rollup/plugin-replace": "^6.0.2",
+    "@rollup/plugin-typescript": "^12.1.4",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/github": "^11.0.6",
+    "@semantic-release/npm": "^12.0.2",
+    "@semantic-release/release-notes-generator": "^14.1.0",
+    "@types/node": "^24.5.1",
+    "dotenv": "^17.2.3",
+    "eslint": "^9.37.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "globals": "^16.4.0",
+    "husky": "^9.1.7",
+    "jiti": "^2.6.1",
+    "prettier": "^3.6.2",
+    "rollup": "^4.52.4",
+    "tslib": "^2.8.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.45.0",
+    "vitest": "^3.2.4"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "package.json",
+    "LICENSE"
+  ]
 }
