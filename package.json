@@ -81,6 +81,7 @@
     "url": "https://github.com/brightdata/sdk-js/issues"
   },
   "homepage": "https://github.com/brightdata/sdk-js#readme",
+  "packageManager": "pnpm@10.32.1",
   "engines": {
     "node": ">=20.0.0"
   },
