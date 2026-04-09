@@ -26,6 +26,12 @@ export const ClientOptionsSchema = z.object({
     rateLimit: z.number().min(0).optional(),
     ratePeriod: z.number().positive().optional(),
     timeout: z.number().min(1000).max(300_000).optional(),
+
+    // Browser API credentials (optional — only needed for client.browser)
+    browserUsername: z.string().optional(),
+    browserPassword: z.string().optional(),
+    browserHost: z.string().optional(),
+    browserPort: z.number().int().min(1).max(65535).optional(),
 });
 
 export type BdClientOptions = z.input<typeof ClientOptionsSchema>;

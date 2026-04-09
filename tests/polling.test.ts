@@ -1,8 +1,8 @@
 import { describe, expect, test, vi } from 'vitest';
-import { pollUntilStatus } from '../src/utils/polling';
+import { pollUntilReady } from '../src/utils/polling';
 import { APIError, BRDError, TimeoutError } from '../src/utils/errors';
 
-describe('pollUntilStatus', () => {
+describe('pollUntilReady', () => {
     test('resolves when status is ready', async () => {
         const getStatus = vi
             .fn()
@@ -10,14 +10,14 @@ describe('pollUntilStatus', () => {
             .mockResolvedValueOnce({ status: 'running' })
             .mockResolvedValueOnce({ status: 'ready' });
 
-        await pollUntilStatus('snap_123', getStatus, { pollInterval: 10 });
+        await pollUntilReady('snap_123', getStatus, { pollInterval: 10 });
         expect(getStatus).toHaveBeenCalledTimes(3);
     });
 
     test('resolves immediately if already ready', async () => {
         const getStatus = vi.fn().mockResolvedValueOnce({ status: 'ready' });
         const start = Date.now();
-        await pollUntilStatus('snap_123', getStatus, { pollInterval: 10_000 });
+        await pollUntilReady('snap_123', getStatus, { pollInterval: 10_000 });
         expect(Date.now() - start).toBeLessThan(100);
         expect(getStatus).toHaveBeenCalledTimes(1);
     });
@@ -25,7 +25,7 @@ describe('pollUntilStatus', () => {
     test('throws TimeoutError when timeout exceeded', async () => {
         const getStatus = vi.fn().mockResolvedValue({ status: 'running' });
         await expect(
-            pollUntilStatus('snap_123', getStatus, {
+            pollUntilReady('snap_123', getStatus, {
                 pollInterval: 50,
                 pollTimeout: 120,
             }),
@@ -35,14 +35,14 @@ describe('pollUntilStatus', () => {
     test('throws BRDError when status is failed', async () => {
         const getStatus = vi.fn().mockResolvedValueOnce({ status: 'failed' });
         await expect(
-            pollUntilStatus('snap_123', getStatus, { pollInterval: 10 }),
+            pollUntilReady('snap_123', getStatus, { pollInterval: 10 }),
         ).rejects.toThrow(BRDError);
     });
 
     test('throws BRDError when status is error', async () => {
         const getStatus = vi.fn().mockResolvedValueOnce({ status: 'error' });
         await expect(
-            pollUntilStatus('snap_123', getStatus, { pollInterval: 10 }),
+            pollUntilReady('snap_123', getStatus, { pollInterval: 10 }),
         ).rejects.toThrow(BRDError);
     });
 
@@ -53,7 +53,7 @@ describe('pollUntilStatus', () => {
             .mockResolvedValueOnce({ status: 'ready' });
         const onStatus = vi.fn();
 
-        await pollUntilStatus('snap_123', getStatus, {
+        await pollUntilReady('snap_123', getStatus, {
             pollInterval: 10,
             onStatus,
         });
@@ -70,7 +70,7 @@ describe('pollUntilStatus', () => {
                 new APIError('API failure', 500, 'Internal Server Error'),
             );
         await expect(
-            pollUntilStatus('snap_123', getStatus, { pollInterval: 10 }),
+            pollUntilReady('snap_123', getStatus, { pollInterval: 10 }),
         ).rejects.toThrow(APIError);
     });
 });

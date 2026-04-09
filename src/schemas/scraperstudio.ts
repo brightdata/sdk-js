@@ -2,9 +2,7 @@ import { z } from 'zod';
 
 // --- Input validation ---
 
-export const CollectorIdSchema = z
-    .string()
-    .min(1, 'collector ID is required');
+export const CollectorIdSchema = z.string().min(1, 'collector ID is required');
 
 export const ScraperStudioInputSchema = z.union([
     z.record(z.string(), z.any()),
@@ -19,7 +17,9 @@ export const ScraperStudioRunOptionsSchema = z.object({
     pollInterval: z.number().positive().default(10_000),
 });
 
-export type ScraperStudioRunOptions = z.input<typeof ScraperStudioRunOptionsSchema>;
+export type ScraperStudioRunOptions = z.input<
+    typeof ScraperStudioRunOptionsSchema
+>;
 
 // --- Result type for run() ---
 

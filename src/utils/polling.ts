@@ -15,7 +15,7 @@ export interface PollOptions {
     onStatus?: (status: string, elapsedMs: number) => void;
 }
 
-export async function pollUntilStatus(
+export async function pollUntilReady(
     id: string,
     getStatus: (id: string) => Promise<{ status: string }>,
     options?: PollOptions,
@@ -52,9 +52,7 @@ export async function pollUntilStatus(
             return;
         }
         if (status === 'failed' || status === 'error') {
-            throw new BRDError(
-                `${id} failed with status: ${status}`,
-            );
+            throw new BRDError(`${id} failed with status: ${status}`);
         }
 
         await sleep(interval);

@@ -8,7 +8,7 @@ import {
     getAbsAndEnsureDir,
 } from '../../utils/files';
 import { parseJSON, parseResponse } from '../../utils/misc';
-import { pollUntilStatus } from '../../utils/polling';
+import { pollUntilReady } from '../../utils/polling';
 import type { z } from 'zod';
 import {
     SnapshotIdSchema,
@@ -197,7 +197,7 @@ export class SnapshotAPI extends BaseAPI {
     async #awaitReady(snapshotId: string): Promise<void> {
         this.logger.info(`polling snapshot status for id ${snapshotId}`);
 
-        await pollUntilStatus(snapshotId, (id) => this.#getStatus(id), {
+        await pollUntilReady(snapshotId, (id) => this.#getStatus(id), {
             pollInterval: 10_000,
             onStatus: (status, elapsed) => {
                 this.logger.info(

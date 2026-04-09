@@ -2,7 +2,7 @@ import { Transport, assertResponse } from '../../core/transport';
 import { API_ENDPOINT } from '../../utils/constants';
 import { parseJSON } from '../../utils/misc';
 import { getLogger } from '../../utils/logger';
-import { pollUntilStatus } from '../../utils/polling';
+import { pollUntilReady } from '../../utils/polling';
 import type {
     DatasetMetadata,
     DatasetSnapshotStatus,
@@ -83,7 +83,7 @@ export abstract class BaseDataset {
         opts?: DatasetDownloadOptions,
     ): Promise<unknown[]> {
         this.logger.debug('download', { snapshotId });
-        await pollUntilStatus(snapshotId, (id) => this.getStatus(id));
+        await pollUntilReady(snapshotId, (id) => this.getStatus(id));
         const url = API_ENDPOINT.DATASET_SNAPSHOT_DOWNLOAD.replace(
             '{snapshot_id}',
             snapshotId,

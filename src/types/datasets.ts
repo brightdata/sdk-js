@@ -12,7 +12,10 @@ export type {
 
 export type SnapshotFormat = 'json' | 'ndjson' | 'jsonl' | 'csv';
 
-export type { SnapshotMeta, SnapshotStatusResponse } from '../schemas/responses';
+export type {
+    SnapshotMeta,
+    SnapshotStatusResponse,
+} from '../schemas/responses';
 
 export type SnapshotStatus = SnapshotStatusResponse['status'];
 
