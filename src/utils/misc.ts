@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { getLogger } from './logger';
 import { APIError } from './errors';
 
@@ -15,6 +16,28 @@ export function parseJSON<T>(data: string): T {
         );
         throw new APIError('Failed to parse JSON response');
     }
+}
+
+export function parseResponse<T extends z.ZodType>(
+    data: string,
+    schema: T,
+    label: string,
+): z.infer<T> {
+    const raw = parseJSON<unknown>(data);
+    const result = schema.safeParse(raw);
+    if (!result.success) {
+        const preview =
+            data.length > 300 ? data.substring(0, 300) + '...' : data;
+        const logger = getLogger('utils.response');
+        logger.warning(`unexpected API response shape for ${label}`, {
+            error: z.prettifyError(result.error),
+            data: preview,
+        });
+        throw new APIError(
+            `Unexpected response from ${label}: ${z.prettifyError(result.error)}`,
+        );
+    }
+    return result.data;
 }
 
 export const isStrArray = (maybeArr: unknown): maybeArr is string[] =>

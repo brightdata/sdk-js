@@ -45,7 +45,9 @@ await client.close();
 - **Web Scraping** — Scrape any website using anti-bot detection bypass and proxy support
 - **Search Engine Results** — Google, Bing, and Yandex search with batch support
 - **Platform Scrapers** — Structured data collection from LinkedIn, Amazon, Instagram, TikTok, YouTube, Reddit, and more
-- **Datasets** — Access 19 pre-built datasets (Amazon, LinkedIn, Instagram, TikTok, X/Twitter) with query/download support
+- **Discover API** — AI-powered web search with intent-based relevance ranking
+- **Scraper Studio** — Trigger and fetch results from custom scrapers built in Bright Data's Scraper Studio
+- **Datasets** — Access 126 pre-built datasets across dozens of platforms with query/download support
 - **Parallel Processing** — Concurrent processing for multiple URLs or queries
 - **Robust Error Handling** — Typed error classes with retry logic
 - **Zone Management** — Automatic zone creation and management
@@ -168,11 +170,77 @@ console.log(result.status);  // 'ready'
 console.log(result.rowCount);
 ```
 
-**Available platforms:** `linkedin`, `amazon`, `instagram`, `tiktok`, `youtube`, `reddit`, `facebook`, `chatGPT`, `digikey`, `perplexity`
+**Available platforms:** `linkedin`, `amazon`, `instagram`, `tiktok`, `youtube`, `reddit`, `facebook`, `pinterest`, `chatGPT`, `digikey`, `perplexity`
+
+### Discover API
+
+AI-powered web search with relevance ranking based on intent.
+
+```javascript
+// Basic search
+const result = await client.discover('artificial intelligence trends 2026');
+console.log(result.data); // [{ link, title, description, relevance_score }, ...]
+
+// With intent for semantic ranking
+const result = await client.discover('Tesla battery technology', {
+    intent: 'recent breakthroughs in EV battery chemistry',
+});
+
+// With filtering and localization
+const result = await client.discover('sustainable fashion brands', {
+    intent: 'eco-friendly clothing companies',
+    filterKeywords: ['sustainability', 'eco-friendly', 'organic'],
+    country: 'us',
+    numResults: 10,
+});
+
+// Include full page content
+const result = await client.discover('python asyncio tutorial', {
+    includeContent: true,
+    numResults: 3,
+});
+
+// Manual trigger/poll/fetch
+const job = await client.discoverTrigger('market research SaaS', {
+    intent: 'competitor pricing strategies',
+});
+await job.wait({ timeout: 60_000 });
+const data = await job.fetch();
+```
+
+### Scraper Studio
+
+Trigger and fetch results from your custom scrapers built in [Scraper Studio](https://brightdata.com/cp/data_collector).
+
+```javascript
+// Orchestrated — trigger + poll + return results
+const results = await client.scraperStudio.run('c_your_collector_id', {
+    input: { url: 'https://example.com/product/1' },
+});
+// results: RunResult[] — one per input with { input, data, error, responseId, elapsedMs }
+
+// Multiple inputs (processed sequentially)
+const results = await client.scraperStudio.run('c_your_collector_id', {
+    input: [
+        { url: 'https://example.com/product/1' },
+        { url: 'https://example.com/product/2' },
+    ],
+});
+
+// Manual control — trigger, then poll yourself
+const job = await client.scraperStudio.trigger('c_your_collector_id', {
+    url: 'https://example.com/product/1',
+});
+const data = await job.waitAndFetch();
+
+// Check job status (by job ID from the dashboard)
+const status = await client.scraperStudio.status('j_abc123');
+console.log(status.status); // 'queued' | 'running' | 'done' | 'failed'
+```
 
 ### Datasets
 
-Access pre-built datasets for querying and downloading structured data snapshots.
+Access 126 pre-built datasets for querying and downloading structured data snapshots.
 
 ```javascript
 const ds = client.datasets;

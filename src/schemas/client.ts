@@ -7,13 +7,19 @@ export const ApiKeySchema = z
 
 export const VerboseSchema = z.stringbool().optional();
 
+export const LogLevelSchema = z.enum([
+    'DEBUG',
+    'INFO',
+    'WARNING',
+    'ERROR',
+    'CRITICAL',
+]);
+
 export const ClientOptionsSchema = z.object({
     apiKey: ApiKeySchema.optional(),
     webUnlockerZone: ZoneNameSchema.optional(),
     serpZone: ZoneNameSchema.optional(),
-    logLevel: z
-        .enum(['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
-        .optional(),
+    logLevel: LogLevelSchema.optional(),
     verbose: z.boolean().optional(),
     structuredLogging: z.boolean().default(true),
     autoCreateZones: z.boolean().default(true),

@@ -1,4 +1,4 @@
-import { pollUntilReady, type PollOptions } from '../../utils/polling';
+import { pollUntilStatus, type PollOptions } from '../../utils/polling';
 import { DataNotReadyError, TimeoutError } from '../../utils/errors';
 import { sleep } from '../../utils/misc';
 import { getLogger } from '../../utils/logger';
@@ -62,7 +62,7 @@ export class ScrapeJob {
      * @throws BRDError if job fails
      */
     async wait(options?: PollOptions): Promise<string> {
-        await pollUntilReady(
+        await pollUntilStatus(
             this.snapshotId,
             (id) => this.snapshotOps.getStatus(id),
             options,

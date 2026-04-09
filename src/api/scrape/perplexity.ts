@@ -11,8 +11,7 @@ import { assertSchema } from '../../schemas/utils';
 import { BaseAPI, type BaseAPIOptions } from './base';
 
 const DATASET_ID = {
-    // TODO: confirm dataset ID from Bright Data API registry
-    SEARCH: 'gd_m0ci4ikq4icr52snty',
+    SEARCH: 'gd_m7dhdot1vw9a7gc1n',
 };
 
 const assertInput = (

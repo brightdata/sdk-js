@@ -2,8 +2,7 @@ import { Transport, assertResponse } from '../../core/transport';
 import { API_ENDPOINT } from '../../utils/constants';
 import { parseJSON } from '../../utils/misc';
 import { getLogger } from '../../utils/logger';
-import { wrapAPIError } from '../../utils/error-utils';
-import { pollUntilReady } from '../../utils/polling';
+import { pollUntilStatus } from '../../utils/polling';
 import type {
     DatasetMetadata,
     DatasetSnapshotStatus,
@@ -34,13 +33,9 @@ export abstract class BaseDataset {
             '{dataset_id}',
             this.datasetId,
         );
-        try {
-            const response = await this.transport.request(url);
-            const text = await assertResponse(response);
-            return parseJSON<DatasetMetadata>(text);
-        } catch (e: unknown) {
-            wrapAPIError(e, `datasets.${this.name}.getMetadata`);
-        }
+        const response = await this.transport.request(url);
+        const text = await assertResponse(response);
+        return parseJSON<DatasetMetadata>(text);
     }
 
     async query(
@@ -48,27 +43,23 @@ export abstract class BaseDataset {
         opts?: DatasetQueryOptions,
     ): Promise<string> {
         this.logger.debug('query', { filter });
-        try {
-            const body: Record<string, unknown> = {
-                dataset_id: this.datasetId,
-                filter,
-            };
-            if (opts?.records_limit) {
-                body.records_limit = opts.records_limit;
-            }
-            const response = await this.transport.request(
-                API_ENDPOINT.DATASET_FILTER,
-                {
-                    method: 'POST',
-                    body: JSON.stringify(body),
-                },
-            );
-            const text = await assertResponse(response);
-            const result = parseJSON<{ snapshot_id: string }>(text);
-            return result.snapshot_id;
-        } catch (e: unknown) {
-            wrapAPIError(e, `datasets.${this.name}.query`);
+        const body: Record<string, unknown> = {
+            dataset_id: this.datasetId,
+            filter,
+        };
+        if (opts?.records_limit) {
+            body.records_limit = opts.records_limit;
         }
+        const response = await this.transport.request(
+            API_ENDPOINT.DATASET_FILTER,
+            {
+                method: 'POST',
+                body: JSON.stringify(body),
+            },
+        );
+        const text = await assertResponse(response);
+        const result = parseJSON<{ snapshot_id: string }>(text);
+        return result.snapshot_id;
     }
 
     async sample(opts?: DatasetQueryOptions): Promise<string> {
@@ -82,13 +73,9 @@ export abstract class BaseDataset {
             '{snapshot_id}',
             snapshotId,
         );
-        try {
-            const response = await this.transport.request(url);
-            const text = await assertResponse(response);
-            return parseJSON<DatasetSnapshotStatus>(text);
-        } catch (e: unknown) {
-            wrapAPIError(e, `datasets.${this.name}.getStatus`);
-        }
+        const response = await this.transport.request(url);
+        const text = await assertResponse(response);
+        return parseJSON<DatasetSnapshotStatus>(text);
     }
 
     async download(
@@ -96,19 +83,15 @@ export abstract class BaseDataset {
         opts?: DatasetDownloadOptions,
     ): Promise<unknown[]> {
         this.logger.debug('download', { snapshotId });
-        try {
-            await pollUntilReady(snapshotId, (id) => this.getStatus(id));
-            const url = API_ENDPOINT.DATASET_SNAPSHOT_DOWNLOAD.replace(
-                '{snapshot_id}',
-                snapshotId,
-            );
-            const query: Record<string, unknown> = {};
-            if (opts?.format) query.format = opts.format;
-            const response = await this.transport.request(url, { query });
-            const text = await assertResponse(response);
-            return parseJSON<unknown[]>(text);
-        } catch (e: unknown) {
-            wrapAPIError(e, `datasets.${this.name}.download`);
-        }
+        await pollUntilStatus(snapshotId, (id) => this.getStatus(id));
+        const url = API_ENDPOINT.DATASET_SNAPSHOT_DOWNLOAD.replace(
+            '{snapshot_id}',
+            snapshotId,
+        );
+        const query: Record<string, unknown> = {};
+        if (opts?.format) query.format = opts.format;
+        const response = await this.transport.request(url, { query });
+        const text = await assertResponse(response);
+        return parseJSON<unknown[]>(text);
     }
 }
