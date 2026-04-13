@@ -14,6 +14,8 @@ import {
     MAX_RETRIES,
     RETRY_BACKOFF_FACTOR,
     RETRY_STATUSES,
+    RETRY_METHODS,
+    RETRY_ERROR_CODES,
 } from '../utils/constants';
 import {
     APIError,
@@ -34,6 +36,13 @@ const TIMEOUT_ERROR_NAMES = new Set([
     'BodyTimeoutError',
     'ConnectTimeoutError',
 ]);
+
+function isAbortTimeout(err: Error): boolean {
+    return (
+        (err.name === 'TimeoutError' && !(err instanceof BRDError)) ||
+        (err.name === 'AbortError' && err.message?.includes('timeout'))
+    );
+}
 
 export interface TransportOptions {
     apiKey: string;
@@ -96,6 +105,8 @@ export class Transport {
                 maxRetries: MAX_RETRIES,
                 timeoutFactor: RETRY_BACKOFF_FACTOR,
                 statusCodes: RETRY_STATUSES,
+                methods: RETRY_METHODS as unknown as Dispatcher.HttpMethod[],
+                errorCodes: RETRY_ERROR_CODES,
             }),
         );
         process.on('beforeExit', this.onBeforeExit);
@@ -163,19 +174,7 @@ export class Transport {
                     error: (e as Error).message,
                 },
             );
-            if (e instanceof BRDError) throw e;
-            const err = e as Error;
-            if (TIMEOUT_ERROR_NAMES.has(err.name)) {
-                throw new NetworkTimeoutError(
-                    `Request timed out: ${err.message}`,
-                    {
-                        cause: err,
-                    },
-                );
-            }
-            throw new NetworkError(`Network error: ${err.message}`, {
-                cause: err,
-            });
+            this.classifyError(e);
         }
     }
 
@@ -229,19 +228,7 @@ export class Transport {
                     error: (e as Error).message,
                 },
             );
-            if (e instanceof BRDError) throw e;
-            const err = e as Error;
-            if (TIMEOUT_ERROR_NAMES.has(err.name)) {
-                throw new NetworkTimeoutError(
-                    `Request timed out: ${err.message}`,
-                    {
-                        cause: err,
-                    },
-                );
-            }
-            throw new NetworkError(`Network error: ${err.message}`, {
-                cause: err,
-            });
+            this.classifyError(e);
         }
     }
 
@@ -272,6 +259,23 @@ export class Transport {
 
         logRequest(method, JSON.stringify(url), meta);
     }
+
+    private classifyError(err: unknown): never {
+        if (err instanceof BRDError) throw err;
+        const e = err as Error;
+        if (TIMEOUT_ERROR_NAMES.has(e.name) || isAbortTimeout(e)) {
+            throw new NetworkTimeoutError(`Request timed out: ${e.message}`, {
+                cause: e,
+            });
+        }
+        if (e.name === 'RequestRetryError' && 'statusCode' in e) {
+            throwInvalidStatus(
+                (e as Error & { statusCode: number }).statusCode,
+                `retries exhausted: ${e.message}`,
+            );
+        }
+        throw new NetworkError(`Network error: ${e.message}`, { cause: e });
+    }
 }
 
 export function throwInvalidStatus(status: number, responseTxt: string): never {
@@ -301,8 +305,21 @@ export async function assertResponse(
     parse = true,
 ): Promise<string | Dispatcher.ResponseData['body']> {
     if (response.statusCode < 400) {
-        return parse ? await response.body.text() : response.body;
+        if (!parse) return response.body;
+        try {
+            return await response.body.text();
+        } catch (e) {
+            throw new NetworkError(
+                `Failed to read response body: ${(e as Error).message}`,
+                { cause: e as Error },
+            );
+        }
     }
-
-    throwInvalidStatus(response.statusCode, await response.body.text());
+    let bodyText: string;
+    try {
+        bodyText = await response.body.text();
+    } catch {
+        bodyText = '(response body unreadable)';
+    }
+    throwInvalidStatus(response.statusCode, bodyText);
 }

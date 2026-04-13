@@ -7,6 +7,27 @@ export const DEFAULT_TIMEOUT = 120_000;
 export const MAX_RETRIES = 3;
 export const RETRY_BACKOFF_FACTOR = 1.5;
 export const RETRY_STATUSES = [429, 500, 502, 503, 504];
+export const RETRY_METHODS = [
+    'GET',
+    'HEAD',
+    'OPTIONS',
+    'PUT',
+    'DELETE',
+    'TRACE',
+    'POST',
+] as const;
+export const RETRY_ERROR_CODES: string[] = [
+    'ECONNRESET',
+    'ECONNREFUSED',
+    'ENOTFOUND',
+    'ENETDOWN',
+    'ENETUNREACH',
+    'EHOSTDOWN',
+    'EHOSTUNREACH',
+    'EPIPE',
+    'UND_ERR_SOCKET',
+    'UND_ERR_CONNECT_TIMEOUT',
+];
 export const DEFAULT_CONNECTIONS = DEFAULT_CONCURRENCY * (MAX_RETRIES + 1); // 40
 export const DEFAULT_KEEP_ALIVE_TIMEOUT = 30_000;
 export const DEFAULT_KEEP_ALIVE_MAX_TIMEOUT = 120_000;
@@ -23,6 +44,14 @@ export const API_ENDPOINT = {
     SNAPSHOT_DOWNLOAD: `${API_BASE_URL}/datasets/v3/snapshot/{snapshot_id}`,
     SNAPSHOT_DELIVER: `${API_BASE_URL}/datasets/v3/deliver/{snapshot_id}`,
     SNAPSHOT_CANCEL: `${API_BASE_URL}/datasets/v3/snapshot/{snapshot_id}/cancel`,
+
+    // Discover API (AI-powered web search)
+    DISCOVER: `${API_BASE_URL}/discover`,
+
+    // Scraper Studio / DCA (Data Collection Automation)
+    DCA_TRIGGER: `${API_BASE_URL}/dca/trigger_immediate`,
+    DCA_GET_RESULT: `${API_BASE_URL}/dca/get_result`,
+    DCA_LOG: `${API_BASE_URL}/dca/log`,
 
     // Datasets service (pre-collected data — separate from /datasets/v3/ scraper endpoints)
     DATASET_LIST: `${API_BASE_URL}/datasets/list`,

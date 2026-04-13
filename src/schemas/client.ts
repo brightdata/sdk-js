@@ -7,19 +7,31 @@ export const ApiKeySchema = z
 
 export const VerboseSchema = z.stringbool().optional();
 
+export const LogLevelSchema = z.enum([
+    'DEBUG',
+    'INFO',
+    'WARNING',
+    'ERROR',
+    'CRITICAL',
+]);
+
 export const ClientOptionsSchema = z.object({
     apiKey: ApiKeySchema.optional(),
     webUnlockerZone: ZoneNameSchema.optional(),
     serpZone: ZoneNameSchema.optional(),
-    logLevel: z
-        .enum(['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
-        .optional(),
+    logLevel: LogLevelSchema.optional(),
     verbose: z.boolean().optional(),
     structuredLogging: z.boolean().default(true),
     autoCreateZones: z.boolean().default(true),
     rateLimit: z.number().min(0).optional(),
     ratePeriod: z.number().positive().optional(),
     timeout: z.number().min(1000).max(300_000).optional(),
+
+    // Browser API credentials (optional — only needed for client.browser)
+    browserUsername: z.string().optional(),
+    browserPassword: z.string().optional(),
+    browserHost: z.string().optional(),
+    browserPort: z.number().int().min(1).max(65535).optional(),
 });
 
 export type BdClientOptions = z.input<typeof ClientOptionsSchema>;

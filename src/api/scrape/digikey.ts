@@ -1,5 +1,6 @@
 import type {
     DatasetOptions,
+    DiscoverOptions,
     OrchestrateOptions,
     UnknownRecord,
 } from '../../types/datasets';
@@ -47,5 +48,27 @@ export class DigikeyAPI extends BaseAPI {
         this.logger.info(`products (orchestrated) for ${input.length} urls`);
         const [safeInput] = assertInput(input, {}, 'products');
         return this.orchestrate(safeInput, DATASET_ID.PRODUCT, opts);
+    }
+    /**
+     * Discover DigiKey products by category URL.
+     * @param input - an array of category URLs
+     * @param opt - discover options to control the request behavior
+     * @returns a promise that resolves with snapshot meta
+     */
+    discoverByCategory(input: string[], opt: DiscoverOptions) {
+        this.logger.info(
+            `discoverByCategory for ${input.length} urls`,
+        );
+        const [safeInput, safeOpt] = assertInput(
+            input,
+            opt,
+            'discoverByCategory',
+        );
+        return this.run(safeInput, DATASET_ID.PRODUCT, {
+            ...safeOpt,
+            async: true,
+            type: 'discover_new',
+            discoverBy: 'category',
+        });
     }
 }

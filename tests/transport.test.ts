@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
-import { request as lib_request, stream as lib_stream } from 'undici';
+import { request as lib_request, stream as lib_stream, interceptors } from 'undici';
 import { Transport } from '../src/core/transport';
 import {
     BRDError,
+    APIError,
     AuthenticationError,
+    ValidationError,
     NetworkError,
     NetworkTimeoutError,
 } from '../src/utils/errors';
@@ -310,5 +312,167 @@ describe('Transport.stream()', () => {
         } catch (e) {
             expect(e).toBe(original);
         }
+    });
+});
+
+describe('AbortSignal timeout detection', () => {
+    let transport: Transport;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        transport = new Transport({ apiKey: API_KEY });
+    });
+
+    afterEach(async () => {
+        try { await transport?.close(); } catch { /* ignore */ }
+    });
+
+    it('DOMException name=TimeoutError → NetworkTimeoutError', async () => {
+        const err = new Error('The operation was aborted');
+        err.name = 'TimeoutError';
+        vi.mocked(lib_request).mockRejectedValue(err);
+
+        await expect(
+            transport.request('https://example.com'),
+        ).rejects.toThrow(NetworkTimeoutError);
+    });
+
+    it('AbortError with timeout message → NetworkTimeoutError', async () => {
+        const err = new Error('The operation was aborted due to timeout');
+        err.name = 'AbortError';
+        vi.mocked(lib_request).mockRejectedValue(err);
+
+        await expect(
+            transport.request('https://example.com'),
+        ).rejects.toThrow(NetworkTimeoutError);
+    });
+
+    it('AbortError without timeout message → NetworkError', async () => {
+        const err = new Error('The operation was aborted');
+        err.name = 'AbortError';
+        vi.mocked(lib_request).mockRejectedValue(err);
+
+        await expect(
+            transport.request('https://example.com'),
+        ).rejects.toThrow(NetworkError);
+    });
+
+    it('stream: DOMException name=TimeoutError → NetworkTimeoutError', async () => {
+        const err = new Error('The operation was aborted');
+        err.name = 'TimeoutError';
+        vi.mocked(lib_stream).mockRejectedValue(err);
+
+        await expect(
+            transport.stream('https://example.com', { method: 'GET' }, vi.fn()),
+        ).rejects.toThrow(NetworkTimeoutError);
+    });
+});
+
+describe('RequestRetryError classification', () => {
+    let transport: Transport;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        transport = new Transport({ apiKey: API_KEY });
+    });
+
+    afterEach(async () => {
+        try { await transport?.close(); } catch { /* ignore */ }
+    });
+
+    function makeRetryError(statusCode: number) {
+        const err = new Error('Request retry error') as Error & { statusCode: number };
+        err.name = 'RequestRetryError';
+        err.statusCode = statusCode;
+        return err;
+    }
+
+    it('statusCode 429 → APIError', async () => {
+        vi.mocked(lib_request).mockRejectedValue(makeRetryError(429));
+
+        await expect(
+            transport.request('https://example.com'),
+        ).rejects.toThrow(APIError);
+    });
+
+    it('statusCode 500 → APIError', async () => {
+        vi.mocked(lib_request).mockRejectedValue(makeRetryError(500));
+
+        await expect(
+            transport.request('https://example.com'),
+        ).rejects.toThrow(APIError);
+    });
+
+    it('statusCode 403 → AuthenticationError', async () => {
+        vi.mocked(lib_request).mockRejectedValue(makeRetryError(403));
+
+        await expect(
+            transport.request('https://example.com'),
+        ).rejects.toThrow(AuthenticationError);
+    });
+
+    it('statusCode 400 → ValidationError', async () => {
+        vi.mocked(lib_request).mockRejectedValue(makeRetryError(400));
+
+        await expect(
+            transport.request('https://example.com'),
+        ).rejects.toThrow(ValidationError);
+    });
+
+    it('stream: statusCode 429 → APIError', async () => {
+        vi.mocked(lib_stream).mockRejectedValue(makeRetryError(429));
+
+        await expect(
+            transport.stream('https://example.com', { method: 'GET' }, vi.fn()),
+        ).rejects.toThrow(APIError);
+    });
+
+    it('stream: statusCode 403 → AuthenticationError', async () => {
+        vi.mocked(lib_stream).mockRejectedValue(makeRetryError(403));
+
+        await expect(
+            transport.stream('https://example.com', { method: 'GET' }, vi.fn()),
+        ).rejects.toThrow(AuthenticationError);
+    });
+});
+
+describe('retry interceptor configuration', () => {
+    it('retry interceptor receives correct options', () => {
+        const transport = new Transport({ apiKey: API_KEY });
+        const retryCall = vi.mocked(interceptors.retry).mock.calls[0]![0] as Record<string, unknown>;
+
+        expect(retryCall).toMatchObject({
+            maxRetries: 3,
+            timeoutFactor: 1.5,
+            statusCodes: [429, 500, 502, 503, 504],
+        });
+        expect(retryCall.methods).toBeDefined();
+        expect(retryCall.errorCodes).toBeDefined();
+
+        void transport.close();
+    });
+
+    it('POST is in retry methods', () => {
+        const transport = new Transport({ apiKey: API_KEY });
+        const retryCall = vi.mocked(interceptors.retry).mock.calls[0]![0] as Record<string, unknown>;
+        const methods = retryCall.methods as string[];
+
+        expect(methods).toContain('POST');
+        expect(methods).toContain('GET');
+
+        void transport.close();
+    });
+
+    it('UND_ERR_CONNECT_TIMEOUT is in retry error codes', () => {
+        const transport = new Transport({ apiKey: API_KEY });
+        const retryCall = vi.mocked(interceptors.retry).mock.calls[0]![0] as Record<string, unknown>;
+        const errorCodes = retryCall.errorCodes as string[];
+
+        expect(errorCodes).toContain('UND_ERR_CONNECT_TIMEOUT');
+        expect(errorCodes).toContain('ECONNREFUSED');
+        expect(errorCodes).toContain('ECONNRESET');
+        expect(errorCodes).toContain('ENOTFOUND');
+
+        void transport.close();
     });
 });

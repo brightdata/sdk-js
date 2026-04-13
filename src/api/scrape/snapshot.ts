@@ -1,14 +1,13 @@
 import type { Dispatcher } from 'undici';
 import { API_ENDPOINT } from '../../utils/constants';
 import { DataNotReadyError } from '../../utils/errors';
-import { wrapAPIError } from '../../utils/error-utils';
 import { assertResponse, throwInvalidStatus } from '../../core/transport';
 import {
     routeDownloadStream,
     getFilename,
     getAbsAndEnsureDir,
 } from '../../utils/files';
-import { parseJSON } from '../../utils/misc';
+import { parseJSON, parseResponse } from '../../utils/misc';
 import { pollUntilReady } from '../../utils/polling';
 import type { z } from 'zod';
 import {
@@ -18,7 +17,7 @@ import {
 } from '../../schemas/datasets';
 import type { SnapshotDownloadOptions, SnapshotFetchOptions } from '../../schemas/datasets';
 import { assertSchema } from '../../schemas/utils';
-import type { SnapshotStatusResponse } from '../../types/datasets';
+import { SnapshotStatusResponseSchema } from '../../schemas/responses';
 import { BaseAPI, BaseAPIOptions } from './base';
 
 const assertDownloadStatus = (status: number) => {
@@ -111,13 +110,9 @@ export class SnapshotAPI extends BaseAPI {
             snapshotId,
         );
 
-        try {
-            const response = await this.transport.request(url, {});
-            const responseTxt = await assertResponse(response);
-            return parseJSON<SnapshotStatusResponse>(responseTxt);
-        } catch (e: unknown) {
-            wrapAPIError(e, 'snapshot.getStatus');
-        }
+        const response = await this.transport.request(url, {});
+        const responseTxt = await assertResponse(response);
+        return parseResponse(responseTxt, SnapshotStatusResponseSchema, 'datasets/v3/progress');
     }
 
     async #fetch(
@@ -133,33 +128,29 @@ export class SnapshotAPI extends BaseAPI {
             snapshotId,
         );
 
-        try {
-            const response = await this.transport.request(url, {
-                method: 'GET',
-                query: {
-                    format: options.format,
-                } as Record<string, unknown>,
-            });
+        const response = await this.transport.request(url, {
+            method: 'GET',
+            query: {
+                format: options.format,
+            } as Record<string, unknown>,
+        });
 
-            // Must consume body before throwing so the connection is
-            // released back to undici's pool
-            if (response.statusCode === 202) {
-                await response.body.text();
-                throw new DataNotReadyError(
-                    'snapshot is not ready yet, please try again later',
-                );
-            }
-
-            const responseTxt = await assertResponse(response);
-
-            if (options.format === 'json') {
-                return parseJSON<unknown[]>(responseTxt);
-            }
-
-            return responseTxt;
-        } catch (e: unknown) {
-            wrapAPIError(e, 'snapshot.fetch', 'parsing response');
+        // Must consume body before throwing so the connection is
+        // released back to undici's pool
+        if (response.statusCode === 202) {
+            await response.body.text();
+            throw new DataNotReadyError(
+                'snapshot is not ready yet, please try again later',
+            );
         }
+
+        const responseTxt = await assertResponse(response);
+
+        if (options.format === 'json') {
+            return parseJSON<unknown[]>(responseTxt);
+        }
+
+        return responseTxt;
     }
 
     async #download(
@@ -173,38 +164,34 @@ export class SnapshotAPI extends BaseAPI {
             snapshotId,
         );
 
-        try {
-            if (options.statusPolling) {
-                await this.#awaitReady(snapshotId);
-            }
-
-            const filename = getFilename(options.filename, options.format);
-            const target = await getAbsAndEnsureDir(filename);
-
-            this.logger.info(
-                `starting streaming snapshot ${snapshotId} data to ${target}`,
-            );
-
-            await this.transport.stream(
-                url,
-                {
-                    method: 'GET',
-                    query: {
-                        format: options.format,
-                        compress: options.compress,
-                    } as Record<string, unknown>,
-                    opaque: {
-                        filename: target,
-                        assertStatus: assertDownloadStatus,
-                    },
-                },
-                routeDownloadStream as unknown as Dispatcher.StreamFactory,
-            );
-
-            return target;
-        } catch (e: unknown) {
-            wrapAPIError(e, 'snapshot.download');
+        if (options.statusPolling) {
+            await this.#awaitReady(snapshotId);
         }
+
+        const filename = getFilename(options.filename, options.format);
+        const target = await getAbsAndEnsureDir(filename);
+
+        this.logger.info(
+            `starting streaming snapshot ${snapshotId} data to ${target}`,
+        );
+
+        await this.transport.stream(
+            url,
+            {
+                method: 'GET',
+                query: {
+                    format: options.format,
+                    compress: options.compress,
+                } as Record<string, unknown>,
+                opaque: {
+                    filename: target,
+                    assertStatus: assertDownloadStatus,
+                },
+            },
+            routeDownloadStream as unknown as Dispatcher.StreamFactory,
+        );
+
+        return target;
     }
 
     async #awaitReady(snapshotId: string): Promise<void> {
@@ -227,14 +214,10 @@ export class SnapshotAPI extends BaseAPI {
             snapshotId,
         );
 
-        try {
-            const response = await this.transport.request(url, {
-                method: 'POST',
-            });
+        const response = await this.transport.request(url, {
+            method: 'POST',
+        });
 
-            await assertResponse(response);
-        } catch (e: unknown) {
-            wrapAPIError(e, 'snapshot.cancel');
-        }
+        await assertResponse(response);
     }
 }

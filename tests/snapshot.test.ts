@@ -91,7 +91,7 @@ describe('SnapshotAPI.getStatus', () => {
     });
 
     test('returns parsed status response', async () => {
-        const statusData = { status: 'ready', snapshot_id: 'snap_123' };
+        const statusData = { status: 'ready', snapshot_id: 'snap_123', dataset_id: 'ds_1' };
         mockRequest(200, JSON.stringify(statusData));
 
         const result = await api.getStatus('snap_123');
@@ -99,7 +99,7 @@ describe('SnapshotAPI.getStatus', () => {
     });
 
     test('calls correct status endpoint', async () => {
-        mockRequest(200, JSON.stringify({ status: 'running' }));
+        mockRequest(200, JSON.stringify({ status: 'running', snapshot_id: 'snap_123', dataset_id: 'ds_1' }));
         await api.getStatus('snap_123');
 
         expect(mockTransport.request).toHaveBeenCalledWith(
