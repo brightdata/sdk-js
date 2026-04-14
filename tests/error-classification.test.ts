@@ -1,18 +1,11 @@
 import type { Dispatcher } from 'undici';
 import { describe, it, expect } from 'vitest';
 import { throwInvalidStatus, assertResponse } from '../src/core/transport';
-import { wrapAPIError } from '../src/utils/error-utils';
 import {
-    BRDError,
     ValidationError,
     AuthenticationError,
-    ZoneError,
     NetworkError,
-    NetworkTimeoutError,
-    TimeoutError,
-    FSError,
     APIError,
-    DataNotReadyError,
 } from '../src/utils/errors';
 
 describe('throwInvalidStatus', () => {
@@ -100,68 +93,31 @@ describe('assertResponse', () => {
     });
 });
 
-describe('wrapAPIError', () => {
-    describe('rethrows BRDError subtypes unchanged', () => {
-        const subtypes = [
-            { name: 'AuthenticationError', make: () => new AuthenticationError('auth') },
-            { name: 'ValidationError', make: () => new ValidationError('bad') },
-            { name: 'ZoneError', make: () => new ZoneError('zone') },
-            { name: 'NetworkError', make: () => new NetworkError('net') },
-            { name: 'NetworkTimeoutError', make: () => new NetworkTimeoutError('timeout') },
-            { name: 'TimeoutError', make: () => new TimeoutError() },
-            { name: 'FSError', make: () => new FSError('fs') },
-            { name: 'APIError', make: () => new APIError('api') },
-            { name: 'DataNotReadyError', make: () => new DataNotReadyError() },
-            { name: 'BRDError', make: () => new BRDError('base') },
-        ];
+describe('assertResponse — body read failures', () => {
+    it('success path: body.text() throws → NetworkError', async () => {
+        const response = {
+            statusCode: 200,
+            headers: {},
+            body: {
+                text: () => Promise.reject(new Error('stream destroyed')),
+            },
+        } as unknown as Dispatcher.ResponseData;
 
-        for (const { name, make } of subtypes) {
-            it(`rethrows ${name}`, () => {
-                const original = make();
-                try {
-                    wrapAPIError(original, 'test');
-                } catch (e) {
-                    expect(e).toBe(original);
-                }
-            });
-        }
+        await expect(assertResponse(response)).rejects.toThrow(NetworkError);
+        await expect(assertResponse(response)).rejects.toThrow(
+            /Failed to read response body/,
+        );
     });
 
-    describe('wraps non-BRDError as APIError with context', () => {
-        it('wraps TypeError', () => {
-            expect(() => wrapAPIError(new TypeError('boom'), 'snapshot.fetch')).toThrow(
-                APIError,
-            );
-            try {
-                wrapAPIError(new TypeError('boom'), 'snapshot.fetch');
-            } catch (e) {
-                expect((e as APIError).message).toContain('snapshot.fetch');
-                expect((e as APIError).message).toContain('boom');
-            }
-        });
+    it('error path: body.text() throws → still throws status error with fallback text', async () => {
+        const response = {
+            statusCode: 500,
+            headers: {},
+            body: {
+                text: () => Promise.reject(new Error('stream destroyed')),
+            },
+        } as unknown as Dispatcher.ResponseData;
 
-        it('wraps RangeError', () => {
-            expect(() => wrapAPIError(new RangeError('out'), 'test')).toThrow(APIError);
-        });
-
-        it('wraps generic Error', () => {
-            expect(() => wrapAPIError(new Error('fail'), 'test')).toThrow(APIError);
-        });
-
-        it('includes location in message', () => {
-            try {
-                wrapAPIError(new Error('oops'), 'listZones');
-            } catch (e) {
-                expect((e as APIError).message).toBe('listZones: oops');
-            }
-        });
-
-        it('includes location and operation in message', () => {
-            try {
-                wrapAPIError(new Error('unexpected token'), 'snapshot.fetch', 'parsing response');
-            } catch (e) {
-                expect((e as APIError).message).toBe('snapshot.fetch: parsing response: unexpected token');
-            }
-        });
+        await expect(assertResponse(response)).rejects.toThrow(APIError);
     });
 });

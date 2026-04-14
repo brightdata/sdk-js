@@ -1,4 +1,5 @@
 import type { PollOptions } from '../utils/polling';
+import type { SnapshotStatusResponse } from '../schemas/responses';
 
 export type {
     DatasetOptionsSync,
@@ -11,16 +12,12 @@ export type {
 
 export type SnapshotFormat = 'json' | 'ndjson' | 'jsonl' | 'csv';
 
-export type SnapshotStatus = 'running' | 'ready' | 'failed' | 'cancelled';
+export type {
+    SnapshotMeta,
+    SnapshotStatusResponse,
+} from '../schemas/responses';
 
-export interface SnapshotMeta {
-    snapshot_id: string;
-}
-
-export interface SnapshotStatusResponse extends SnapshotMeta {
-    dataset_id: string;
-    status: SnapshotStatus;
-}
+export type SnapshotStatus = SnapshotStatusResponse['status'];
 
 /**
  * Interface for snapshot operations needed by ScrapeJob.

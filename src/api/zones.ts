@@ -3,7 +3,6 @@ import { API_ENDPOINT } from '../utils/constants';
 import { parseJSON } from '../utils/misc';
 import { Transport, assertResponse } from '../core/transport';
 import { ZoneError, BRDError } from '../utils/errors';
-import { wrapAPIError } from '../utils/error-utils';
 import type { ZoneInfo, ZoneInfoResponse } from '../types/zones';
 
 const logger = getLogger('api.zones');
@@ -52,30 +51,24 @@ export class ZonesAPI {
     async listZones(): Promise<ZoneInfo[]> {
         logger.info('fetching list of active zones');
 
-        try {
-            const response = await this.transport.request(
-                API_ENDPOINT.ZONE_LIST,
-                {},
-            );
+        const response = await this.transport.request(
+            API_ENDPOINT.ZONE_LIST,
+            {},
+        );
 
-            const responseTxt = await assertResponse(response);
-            const zones = parseJSON<ZoneInfoResponse[]>(responseTxt);
+        const responseTxt = await assertResponse(response);
+        const zones = parseJSON<ZoneInfoResponse[]>(responseTxt);
 
-            logger.info(`found ${zones.length} active zones`);
+        logger.info(`found ${zones.length} active zones`);
 
-            const res = zones.map((zone) => ({
-                name: zone.zone || zone.name,
-                type: zone.zone_type || zone.type,
-                status: zone.status,
-                ips: zone.ips || 0,
-                bandwidth: zone.bandwidth || 0,
-                created: zone.created_at || zone.created,
-            }));
-
-            return res;
-        } catch (e: unknown) {
-            wrapAPIError(e, 'listZones');
-        }
+        return zones.map((zone) => ({
+            name: zone.zone || zone.name,
+            type: zone.zone_type || zone.type,
+            status: zone.status,
+            ips: zone.ips || 0,
+            bandwidth: zone.bandwidth || 0,
+            created: zone.created_at || zone.created,
+        }));
     }
 
     async ensureZone(name: string, opts: EnsureZoneOpts) {

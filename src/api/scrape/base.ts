@@ -1,15 +1,14 @@
 import { API_ENDPOINT } from '../../utils/constants';
 import { getLogger } from '../../utils/logger';
-import { wrapAPIError } from '../../utils/error-utils';
 import { Transport, assertResponse } from '../../core/transport';
-import { dropEmptyKeys, parseJSON } from '../../utils/misc';
+import { dropEmptyKeys, parseJSON, parseResponse } from '../../utils/misc';
+import { SnapshotMetaResponseSchema } from '../../schemas/responses';
 import { ScrapeJob } from './job';
 import type {
     DatasetOptions,
     OrchestrateOptions,
     UnknownRecord,
     SnapshotFormat,
-    SnapshotMeta,
     SnapshotOperations,
 } from '../../types/datasets';
 import type { ScrapeResult } from '../../models/result';
@@ -121,38 +120,34 @@ export class BaseAPI {
             ? API_ENDPOINT.SCRAPE_ASYNC
             : API_ENDPOINT.SCRAPE_SYNC;
 
-        try {
-            const response = await this.transport.request(endpoint, {
-                method: 'POST',
-                query: this.#getRequestQuery(
-                    datasetId,
-                    opt,
-                ) as unknown as Record<string, unknown>,
-                body: JSON.stringify(body),
+        const response = await this.transport.request(endpoint, {
+            method: 'POST',
+            query: this.#getRequestQuery(
+                datasetId,
+                opt,
+            ) as unknown as Record<string, unknown>,
+            body: JSON.stringify(body),
+        });
+
+        const responseTxt = await assertResponse(response);
+
+        if (opt.async || response.statusCode === 202) {
+            if (response.statusCode === 202 && !opt.async) {
+                this.logger.info(
+                    'request exceeded sync request timeout, converted to async',
+                );
+            }
+            const meta = parseResponse(responseTxt, SnapshotMetaResponseSchema, 'datasets/v3/trigger');
+            return new ScrapeJob(meta.snapshot_id, this.snapshotOps!, {
+                platform: this.name,
             });
-
-            const responseTxt = await assertResponse(response);
-
-            if (opt.async || response.statusCode === 202) {
-                if (response.statusCode === 202 && !opt.async) {
-                    this.logger.info(
-                        'request exceeded sync request timeout, converted to async',
-                    );
-                }
-                const meta = parseJSON<SnapshotMeta>(responseTxt);
-                return new ScrapeJob(meta.snapshot_id, this.snapshotOps!, {
-                    platform: this.name,
-                });
-            }
-
-            if (opt.format === 'json') {
-                return parseJSON<UnknownRecord[]>(responseTxt);
-            }
-
-            return responseTxt;
-        } catch (e: unknown) {
-            wrapAPIError(e, 'scrape.run');
         }
+
+        if (opt.format === 'json') {
+            return parseJSON<UnknownRecord[]>(responseTxt);
+        }
+
+        return responseTxt;
     }
 
     /**

@@ -9,6 +9,7 @@ import { PerplexityAPI } from './perplexity';
 import { TiktokAPI } from './tiktok';
 import { YoutubeAPI } from './youtube';
 import { DigikeyAPI } from './digikey';
+import { PinterestAPI } from './pinterest';
 import { RedditAPI } from './reddit';
 
 export class ScrapeRouter {
@@ -22,6 +23,7 @@ export class ScrapeRouter {
     tiktok: TiktokAPI;
     youtube: YoutubeAPI;
     digikey: DigikeyAPI;
+    pinterest: PinterestAPI;
     reddit: RedditAPI;
 
     constructor(opts: BaseAPIOptions) {
@@ -37,6 +39,7 @@ export class ScrapeRouter {
         this.tiktok = new TiktokAPI(platformOpts);
         this.youtube = new YoutubeAPI(platformOpts);
         this.digikey = new DigikeyAPI(platformOpts);
+        this.pinterest = new PinterestAPI(platformOpts);
         this.reddit = new RedditAPI(platformOpts);
     }
 }
