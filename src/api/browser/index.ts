@@ -1,0 +1,1 @@
+export { BrowserService } from './service';
