@@ -47,6 +47,7 @@ await client.close();
 - **Platform Scrapers** — Structured data collection from LinkedIn, Amazon, Instagram, TikTok, YouTube, Reddit, and more
 - **Discover API** — AI-powered web search with intent-based relevance ranking
 - **Scraper Studio** — Trigger and fetch results from custom scrapers built in Bright Data's Scraper Studio
+- **Browser API** — CDP WebSocket URLs for connecting Playwright, Puppeteer, or Selenium to Bright Data's cloud browsers
 - **Datasets** — Access 126 pre-built datasets across dozens of platforms with query/download support
 - **Parallel Processing** — Concurrent processing for multiple URLs or queries
 - **Robust Error Handling** — Typed error classes with retry logic
@@ -238,6 +239,26 @@ const status = await client.scraperStudio.status('j_abc123');
 console.log(status.status); // 'queued' | 'running' | 'done' | 'failed'
 ```
 
+### Browser API
+
+Build CDP WebSocket URLs for connecting Playwright, Puppeteer, or Selenium to Bright Data's cloud browsers. Credentials come from `browserUsername`/`browserPassword` options or `BRIGHTDATA_BROWSERAPI_USERNAME`/`BRIGHTDATA_BROWSERAPI_PASSWORD` env vars.
+
+```javascript
+// Get a connection URL
+const url = client.browser.getConnectUrl();
+
+// Geo-target the browser with a 2-letter country code
+const usUrl = client.browser.getConnectUrl({ country: 'us' });
+
+// Connect with Playwright
+import { chromium } from 'playwright';
+const browser = await chromium.connectOverCDP(url);
+const page = await browser.newPage();
+await page.goto('https://example.com');
+const html = await page.content();
+await browser.close();
+```
+
 ### Datasets
 
 Access 126 pre-built datasets for querying and downloading structured data snapshots.
@@ -299,6 +320,8 @@ Get your API token from [Bright Data Control Panel](https://brightdata.com/cp/se
 BRIGHTDATA_API_TOKEN=your_api_token
 BRIGHTDATA_WEB_UNLOCKER_ZONE=your_web_unlocker_zone  # Optional
 BRIGHTDATA_SERP_ZONE=your_serp_zone                  # Optional
+BRIGHTDATA_BROWSERAPI_USERNAME=your_browser_username # Optional, for Browser API
+BRIGHTDATA_BROWSERAPI_PASSWORD=your_browser_password # Optional, for Browser API
 BRIGHTDATA_VERBOSE=1                                  # Optional, enable verbose logging
 ```
 

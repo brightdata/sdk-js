@@ -40,9 +40,8 @@ export type {
 } from './schemas/scraperstudio';
 
 // ── Browser API ────────────────────────────────────────────────
-// TODO: uncomment when browser API files are pushed
-// export { BrowserService } from './api/browser/service';
-// export type { BrowserConnectOptions } from './schemas/browser';
+export { BrowserService } from './api/browser/service';
+export type { BrowserConnectOptions } from './schemas/browser';
 
 // ── Subpath re-exports (backward compat) ─────────────────────────
 // Consumers can also import these from '@brightdata/sdk/scrapers',
