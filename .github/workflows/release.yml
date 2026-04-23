@@ -1,31 +1,25 @@
 name: Release
 on:
-  workflow_run:
-    workflows: ["Test"]
-    branches: [main]
-    types:
-      - completed
+  push:
+    tags: v*
 permissions:
   contents: read
+  id-token: write
 jobs:
   release:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     name: Release
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
-      id-token: write
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: 'npm'
-      - run: npm clean-install
-      - run: npm audit signatures
-      - run: npm run release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          node-version: 24
+          cache: "pnpm"
+          registry-url: 'https://registry.npmjs.org'
+          scope: '@brightdata'
+      - run: pnpm install --frozen-lockfile
+      - name: Set version from tag
+        run: npm version "${GITHUB_REF_NAME#v}" --no-git-tag-version
+      - run: pnpm run build
+      - run: npm publish --provenance --access public --ignore-scripts

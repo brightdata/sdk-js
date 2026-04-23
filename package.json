@@ -1,6 +1,6 @@
 {
   "name": "@brightdata/sdk",
-  "version": "0.0.0-managed-by-semantic-release",
+  "version": "0.0.0",
   "publishConfig": {
     "access": "public"
   },
@@ -60,7 +60,6 @@
     "build:dev": "npm run build:clean && rollup --watch -c",
     "build:dev:dts": "tsc --project tsconfig.dts.json --watch",
     "prepublishOnly": "npm test && npm run sanity && npm run build",
-    "release": "semantic-release",
     "prepare": "husky"
   },
   "keywords": [
@@ -76,12 +75,13 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/brightdata/bright-data-sdk-js.git"
+    "url": "https://github.com/brightdata/sdk-js.git"
   },
   "bugs": {
-    "url": "https://github.com/brightdata/bright-data-sdk-js/issues"
+    "url": "https://github.com/brightdata/sdk-js/issues"
   },
-  "homepage": "https://github.com/brightdata/bright-data-sdk-js#readme",
+  "homepage": "https://github.com/brightdata/sdk-js#readme",
+  "packageManager": "pnpm@10.32.1",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -94,11 +94,7 @@
     "@eslint/js": "^9.37.0",
     "@rollup/plugin-replace": "^6.0.2",
     "@rollup/plugin-typescript": "^12.1.4",
-    "@semantic-release/commit-analyzer": "^13.0.1",
-    "@semantic-release/github": "^11.0.6",
-    "@semantic-release/npm": "^12.0.2",
-    "@semantic-release/release-notes-generator": "^14.1.0",
-    "@types/node": "^24.5.1",
+"@types/node": "^24.5.1",
     "dotenv": "^17.2.3",
     "eslint": "^9.37.0",
     "eslint-config-prettier": "^10.1.8",

@@ -8,8 +8,7 @@ import type { DiscoverResult } from './api/discover/result';
 import type { DiscoverJob } from './api/discover/job';
 import type { DiscoverOptions } from './schemas/discover';
 import { ScraperStudioService } from './api/scraperstudio/service';
-// TODO: uncomment when browser API files are pushed
-// import { BrowserService } from './api/browser/service';
+import { BrowserService } from './api/browser/service';
 import { setup as setupLogger, getLogger } from './utils/logger';
 import {
     DEFAULT_WEB_UNLOCKER_ZONE,
@@ -95,8 +94,7 @@ export class bdclient {
     declare search: SearchRouter;
     declare datasets: DatasetsClient;
     declare scraperStudio: ScraperStudioService;
-    // TODO: uncomment when browser API files are pushed
-    // declare browser: BrowserService;
+    declare browser: BrowserService;
 
     constructor(options?: BdClientOptions) {
         const opt = assertSchema(
@@ -170,29 +168,28 @@ export class bdclient {
             new ScraperStudioService({ transport: this.transport }),
         );
 
-        // TODO: uncomment when browser API files are pushed
-        // defineLazy(this, 'browser', () => {
-        //     const username =
-        //         opt.browserUsername ||
-        //         process.env.BRIGHTDATA_BROWSERAPI_USERNAME;
-        //     const password =
-        //         opt.browserPassword ||
-        //         process.env.BRIGHTDATA_BROWSERAPI_PASSWORD;
-        //
-        //     if (!username || !password) {
-        //         throw new ValidationError(
-        //             'Browser API requires credentials. Pass browserUsername and browserPassword to the client, ' +
-        //                 'or set BRIGHTDATA_BROWSERAPI_USERNAME and BRIGHTDATA_BROWSERAPI_PASSWORD environment variables.',
-        //         );
-        //     }
-        //
-        //     return new BrowserService({
-        //         username,
-        //         password,
-        //         host: opt.browserHost,
-        //         port: opt.browserPort,
-        //     });
-        // });
+        defineLazy(this, 'browser', () => {
+            const username =
+                opt.browserUsername ||
+                process.env.BRIGHTDATA_BROWSERAPI_USERNAME;
+            const password =
+                opt.browserPassword ||
+                process.env.BRIGHTDATA_BROWSERAPI_PASSWORD;
+
+            if (!username || !password) {
+                throw new ValidationError(
+                    'Browser API requires credentials. Pass browserUsername and browserPassword to the client, ' +
+                        'or set BRIGHTDATA_BROWSERAPI_USERNAME and BRIGHTDATA_BROWSERAPI_PASSWORD environment variables.',
+                );
+            }
+
+            return new BrowserService({
+                username,
+                password,
+                host: opt.browserHost,
+                port: opt.browserPort,
+            });
+        });
     }
 
     private get scrapeAPI(): ScrapeAPI {
