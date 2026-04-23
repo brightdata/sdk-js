@@ -401,24 +401,6 @@ try {
 
 **Error types:** `ValidationError`, `AuthenticationError`, `ZoneError`, `NetworkError`, `NetworkTimeoutError`, `TimeoutError`, `APIError`, `DataNotReadyError`, `FSError`
 
-## Development
-
-```bash
-git clone https://github.com/brightdata/bright-data-sdk-js.git
-cd bright-data-sdk-js
-npm install
-npm run build:dev
-```
-
-## Commits conventions and releases
-
-We use [Semantic Release](https://github.com/semantic-release/semantic-release) for automated releases. Commit message conventions:
-- `fix:` — triggers a **PATCH** release (`0.5.0` => `0.5.1`)
-- `feat:` — triggers a **MINOR** release (`0.5.0` => `0.6.0`)
-- `feat!:` or `BREAKING CHANGE:` in footer — triggers a **MAJOR** release (`0.5.0` => `1.0.0`)
-- `docs:` — documentation only, no release
-- `chore:` — general maintenance, no release
-
 ## Support
 
 For any issues, contact [Bright Data support](https://brightdata.com/contact), or open an issue in this repository.
