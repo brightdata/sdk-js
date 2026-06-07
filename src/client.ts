@@ -9,6 +9,8 @@ import type { DiscoverJob } from './api/discover/job';
 import type { DiscoverOptions } from './schemas/discover';
 import { ScraperStudioService } from './api/scraperstudio/service';
 import { BrowserService } from './api/browser/service';
+import { CrawlerService } from './api/crawler/service';
+import { SnapshotAPI } from './api/scrape/snapshot';
 import { setup as setupLogger, getLogger } from './utils/logger';
 import {
     DEFAULT_WEB_UNLOCKER_ZONE,
@@ -95,6 +97,7 @@ export class bdclient {
     declare datasets: DatasetsClient;
     declare scraperStudio: ScraperStudioService;
     declare browser: BrowserService;
+    declare crawler: CrawlerService;
 
     constructor(options?: BdClientOptions) {
         const opt = assertSchema(
@@ -188,6 +191,14 @@ export class bdclient {
                 password,
                 host: opt.browserHost,
                 port: opt.browserPort,
+            });
+        });
+
+        defineLazy(this, 'crawler', () => {
+            const snapshotOps = new SnapshotAPI({ transport: this.transport });
+            return new CrawlerService({
+                transport: this.transport,
+                snapshotOps,
             });
         });
     }

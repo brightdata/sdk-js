@@ -28,6 +28,13 @@ export { DiscoverJob } from './api/discover/job';
 export type { DiscoverResultItem, DiscoverResultFields } from './api/discover/result';
 export type { DiscoverPollOptions } from './api/discover/job';
 
+// ── Crawler ──────────────────────────────────────────────────────
+export { CrawlerService } from './api/crawler/service';
+export { CrawlResult } from './api/crawler/result';
+export { ScrapeJob as CrawlJob } from './api/scrape/job';
+export type { CrawlRecord, CrawlResultFields } from './api/crawler/result';
+export type { CrawlOptions, CrawlDownloadOptions } from './schemas/crawler';
+
 // ── Scraper Studio ──────────────────────────────────────────────
 export { ScraperStudioService } from './api/scraperstudio/service';
 export { ScraperStudioJob } from './api/scraperstudio/job';

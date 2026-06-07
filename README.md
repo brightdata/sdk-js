@@ -45,6 +45,7 @@ await client.close();
 - **Web Scraping** — Scrape any website using anti-bot detection bypass and proxy support
 - **Search Engine Results** — Google, Bing, and Yandex search with batch support
 - **Platform Scrapers** — Structured data collection from LinkedIn, Amazon, Instagram, TikTok, YouTube, Reddit, and more
+- **Crawl API** — Crawl any URL(s) and get every output format (markdown, HTML, text) bundled per page
 - **Discover API** — AI-powered web search with intent-based relevance ranking
 - **Scraper Studio** — Trigger and fetch results from custom scrapers built in Bright Data's Scraper Studio
 - **Browser API** — CDP WebSocket URLs for connecting Playwright, Puppeteer, or Selenium to Bright Data's cloud browsers
@@ -172,6 +173,28 @@ console.log(result.rowCount);
 ```
 
 **Available platforms:** `linkedin`, `amazon`, `instagram`, `tiktok`, `youtube`, `reddit`, `facebook`, `pinterest`, `chatGPT`, `digikey`, `perplexity`
+
+### Crawl API
+
+Crawl one or more URLs and get every output format (markdown, HTML, text) bundled per page.
+
+```javascript
+// Sync — single round-trip
+const result = await client.crawler.crawl('https://example.com');
+console.log(result.data[0].markdown);
+
+// Batch
+const result = await client.crawler.crawl([
+    'https://example.com',
+    'https://example.com/about',
+]);
+console.log(`${result.pageCount} pages`);
+
+// Async — trigger, poll, download
+const job = await client.crawler.trigger('https://example.com');
+const status = await client.crawler.status(job.snapshotId);
+const result = await client.crawler.download(job.snapshotId);
+```
 
 ### Discover API
 
@@ -400,24 +423,6 @@ try {
 ```
 
 **Error types:** `ValidationError`, `AuthenticationError`, `ZoneError`, `NetworkError`, `NetworkTimeoutError`, `TimeoutError`, `APIError`, `DataNotReadyError`, `FSError`
-
-## Development
-
-```bash
-git clone https://github.com/brightdata/bright-data-sdk-js.git
-cd bright-data-sdk-js
-npm install
-npm run build:dev
-```
-
-## Commits conventions and releases
-
-We use [Semantic Release](https://github.com/semantic-release/semantic-release) for automated releases. Commit message conventions:
-- `fix:` — triggers a **PATCH** release (`0.5.0` => `0.5.1`)
-- `feat:` — triggers a **MINOR** release (`0.5.0` => `0.6.0`)
-- `feat!:` or `BREAKING CHANGE:` in footer — triggers a **MAJOR** release (`0.5.0` => `1.0.0`)
-- `docs:` — documentation only, no release
-- `chore:` — general maintenance, no release
 
 ## Support
 
