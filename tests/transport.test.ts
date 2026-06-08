@@ -125,7 +125,7 @@ describe('Transport lifecycle', () => {
             process.emit('beforeExit', 0);
 
             expect(warnSpy).toHaveBeenCalledWith(
-                expect.stringContaining('Transport was not closed'),
+                expect.stringContaining('were not closed'),
             );
             warnSpy.mockRestore();
         });
@@ -138,9 +138,25 @@ describe('Transport lifecycle', () => {
             process.emit('beforeExit', 0);
 
             expect(warnSpy).not.toHaveBeenCalledWith(
-                expect.stringContaining('Transport was not closed'),
+                expect.stringContaining('were not closed'),
             );
             warnSpy.mockRestore();
+        });
+
+        it('registers a single shared beforeExit listener for many transports', async () => {
+            const before = process.listenerCount('beforeExit');
+            const transports = Array.from(
+                { length: 15 },
+                () => new Transport({ apiKey: API_KEY }),
+            );
+
+            // one shared listener regardless of how many transports are open
+            expect(process.listenerCount('beforeExit')).toBe(before + 1);
+
+            for (const t of transports) await t.close();
+
+            // listener is removed once the last transport closes
+            expect(process.listenerCount('beforeExit')).toBe(before);
         });
     });
 });

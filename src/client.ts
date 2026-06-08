@@ -104,6 +104,7 @@ export class bdclient {
         );
         const {
             BRIGHTDATA_API_TOKEN,
+            BRIGHTDATA_API_KEY,
             BRIGHTDATA_VERBOSE,
             BRIGHTDATA_WEB_UNLOCKER_ZONE,
             BRIGHTDATA_SERP_ZONE,
@@ -123,7 +124,7 @@ export class bdclient {
 
         const apiKey = assertSchema(
             ApiKeySchema,
-            opt.apiKey || BRIGHTDATA_API_TOKEN,
+            opt.apiKey || BRIGHTDATA_API_TOKEN || BRIGHTDATA_API_KEY,
             'bdclient.options.apiKey',
         );
 

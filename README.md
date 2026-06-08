@@ -89,7 +89,7 @@ const screenshot = await client.scrapeUrl('https://example.com', {
 // Full options
 const result = await client.scrapeUrl('https://example.com', {
     format: 'raw',            // 'raw' (default) or 'json'
-    dataFormat: 'html',       // 'html' (default), 'markdown', 'screenshot'
+    dataFormat: 'html',       // 'html' (default), 'markdown' (alias: 'md'), 'screenshot'
     country: 'gb',            // two-letter country code
     method: 'GET',            // HTTP method
 });
@@ -177,10 +177,23 @@ console.log(result.rowCount);
 
 AI-powered web search with relevance ranking based on intent.
 
+`discover()` resolves to a `DiscoverResult` wrapper (not a bare array). The items
+are on `result.data` (or its alias `result.results`), and the result is iterable.
+On failure `result.success` is `false`, `result.error` carries the reason, and
+`result.data` / `result.results` stay an empty array — so iterating never throws.
+
 ```javascript
 // Basic search
 const result = await client.discover('artificial intelligence trends 2026');
-console.log(result.data); // [{ link, title, description, relevance_score }, ...]
+
+if (!result.success) {
+    console.error('discover failed:', result.error);
+} else {
+    console.log(result.results); // [{ link, title, description, relevance_score }, ...]
+    for (const item of result) {
+        console.log(`[${item.relevance_score}] ${item.title}`);
+    }
+}
 
 // With intent for semantic ranking
 const result = await client.discover('Tesla battery technology', {
@@ -317,7 +330,7 @@ Get your API token from [Bright Data Control Panel](https://brightdata.com/cp/se
 ### Environment Variables
 
 ```env
-BRIGHTDATA_API_TOKEN=your_api_token
+BRIGHTDATA_API_TOKEN=your_api_token                  # BRIGHTDATA_API_KEY also accepted
 BRIGHTDATA_WEB_UNLOCKER_ZONE=your_web_unlocker_zone  # Optional
 BRIGHTDATA_SERP_ZONE=your_serp_zone                  # Optional
 BRIGHTDATA_BROWSERAPI_USERNAME=your_browser_username # Optional, for Browser API
