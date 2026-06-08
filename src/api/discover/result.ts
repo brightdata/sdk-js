@@ -24,12 +24,27 @@ export class DiscoverResult extends BaseResult<DiscoverResultItem[]> {
     readonly taskId: string | null;
 
     constructor(fields: DiscoverResultFields) {
-        super(fields);
+        // `data` is always an array (empty on failure) so callers can safely
+        // iterate `result.data` / `result.results` without a null check.
+        super({ ...fields, data: fields.data ?? [] });
         this.query = fields.query;
         this.intent = fields.intent ?? null;
         this.durationSeconds = fields.durationSeconds ?? null;
         this.totalResults = fields.totalResults ?? null;
         this.taskId = fields.taskId ?? null;
+    }
+
+    /**
+     * The discovered items. Alias for `data`, kept in sync with the raw API's
+     * `results` field. Always an array (empty when the search failed).
+     */
+    get results(): DiscoverResultItem[] {
+        return this.data ?? [];
+    }
+
+    /** Iterate the discovered items directly: `for (const item of result)`. */
+    [Symbol.iterator](): Iterator<DiscoverResultItem> {
+        return this.results[Symbol.iterator]();
     }
 
     override toJSON(): Record<string, unknown> {

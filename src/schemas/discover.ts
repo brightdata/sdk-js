@@ -30,5 +30,8 @@ export const DiscoverTriggerResponseSchema = z
 export const DiscoverPollResponseSchema = z
     .object({
         status: z.enum(['processing', 'done', 'error', 'failed']),
+        // Surfaced when status is 'error'/'failed' — server provides a reason
+        error: z.string().optional(),
+        message: z.string().optional(),
     })
     .passthrough();
