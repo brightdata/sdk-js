@@ -100,10 +100,32 @@ describe('SnapshotStatusResponseSchema', () => {
         }
     });
 
-    test('rejects unknown status value', () => {
+    // The API owns the status vocabulary; unknown-but-well-formed values
+    // (e.g. "starting", "collecting") must parse so the poll loop can keep
+    // polling. Validation guards the shape, not the membership.
+    test('accepts unknown status value (e.g. "starting")', () => {
+        const result = SnapshotStatusResponseSchema.parse({
+            status: 'starting',
+            snapshot_id: 's1',
+            dataset_id: 'd1',
+        });
+        expect(result.status).toBe('starting');
+    });
+
+    test('rejects empty status', () => {
         expect(() =>
             SnapshotStatusResponseSchema.parse({
-                status: 'unknown',
+                status: '',
+                snapshot_id: 's1',
+                dataset_id: 'd1',
+            }),
+        ).toThrow();
+    });
+
+    test('rejects non-string status', () => {
+        expect(() =>
+            SnapshotStatusResponseSchema.parse({
+                status: 42,
                 snapshot_id: 's1',
                 dataset_id: 'd1',
             }),
