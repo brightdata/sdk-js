@@ -333,6 +333,10 @@ console.log(`Saved to: ${filePath}`);
 
 ## Configuration
 
+### Runtime support
+
+Node.js (>= 20) is the supported and tested runtime. The SDK also runs under Bun, with one caveat: Bun's bundled `undici` omits the optional `dns` interceptor, so DNS-caching is disabled there (requests fall back to the platform resolver and work normally). The SDK detects this automatically and skips the missing interceptor rather than failing.
+
 ### API Token
 
 Get your API token from [Bright Data Control Panel](https://brightdata.com/cp/setting/users?=).
