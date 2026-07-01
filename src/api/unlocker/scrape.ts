@@ -1,5 +1,5 @@
-import type { ScrapeOptions } from '../../types/request';
-import { RequestAPI, type RequestAPIOptions } from './request';
+import type { ScrapeOptions } from '../../types/request.js';
+import { RequestAPI, type RequestAPIOptions } from './request.js';
 
 export class ScrapeAPI extends RequestAPI {
     constructor(opts: RequestAPIOptions) {

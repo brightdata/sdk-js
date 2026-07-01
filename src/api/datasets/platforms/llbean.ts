@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class LlBeanProductsDataset extends BaseDataset {
     readonly datasetId = 'gd_lemtwv4s1mglzlzh57';

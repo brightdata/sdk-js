@@ -1,16 +1,16 @@
-import { Transport, assertResponse } from '../../core/transport';
-import { API_ENDPOINT } from '../../utils/constants';
-import { parseJSON } from '../../utils/misc';
-import { getLogger } from '../../utils/logger';
-import { BaseDataset } from './base';
-import type { DatasetInfo } from './types';
+import { Transport, assertResponse } from '../../core/transport.js';
+import { API_ENDPOINT } from '../../utils/constants.js';
+import { parseJSON } from '../../utils/misc.js';
+import { getLogger } from '../../utils/logger.js';
+import { BaseDataset } from './base.js';
+import type { DatasetInfo } from './types.js';
 import {
     LinkedinProfilesDataset,
     LinkedinCompaniesDataset,
     LinkedinJobListingsDataset,
     LinkedinPostsDataset,
     LinkedinProfilesJobListingsDataset,
-} from './platforms/linkedin';
+} from './platforms/linkedin.js';
 import {
     AmazonProductsDataset,
     AmazonReviewsDataset,
@@ -19,68 +19,68 @@ import {
     AmazonProductsSearchDataset,
     AmazonProductsGlobalDataset,
     AmazonWalmartDataset,
-} from './platforms/amazon';
+} from './platforms/amazon.js';
 import {
     InstagramProfilesDataset,
     InstagramPostsDataset,
     InstagramCommentsDataset,
     InstagramReelsDataset,
-} from './platforms/instagram';
+} from './platforms/instagram.js';
 import {
     TiktokProfilesDataset,
     TiktokPostsDataset,
     TiktokCommentsDataset,
     TiktokShopDataset,
-} from './platforms/tiktok';
+} from './platforms/tiktok.js';
 import {
     XTwitterPostsDataset,
     XTwitterProfilesDataset,
-} from './platforms/x_twitter';
-import { AgodaPropertiesDataset } from './platforms/agoda';
-import { AirbnbPropertiesDataset } from './platforms/airbnb';
-import { AmericanEagleProductsDataset } from './platforms/american_eagle';
+} from './platforms/x_twitter.js';
+import { AgodaPropertiesDataset } from './platforms/agoda.js';
+import { AirbnbPropertiesDataset } from './platforms/airbnb.js';
+import { AmericanEagleProductsDataset } from './platforms/american_eagle.js';
 import {
     AppleAppStoreDataset,
     AppleAppStoreReviewsDataset,
-} from './platforms/apple';
-import { AsosProductsDataset } from './platforms/asos';
-import { AshleyFurnitureProductsDataset } from './platforms/ashley_furniture';
-import { AustraliaRealEstateDataset } from './platforms/australia_real_estate';
-import { AutozoneProductsDataset } from './platforms/autozone';
-import { BalenciagaProductsDataset } from './platforms/balenciaga';
-import { BbcNewsDataset } from './platforms/bbc';
-import { BerlutiProductsDataset } from './platforms/berluti';
-import { BestBuyProductsDataset } from './platforms/bestbuy';
-import { BhProductsDataset } from './platforms/bh';
+} from './platforms/apple.js';
+import { AsosProductsDataset } from './platforms/asos.js';
+import { AshleyFurnitureProductsDataset } from './platforms/ashley_furniture.js';
+import { AustraliaRealEstateDataset } from './platforms/australia_real_estate.js';
+import { AutozoneProductsDataset } from './platforms/autozone.js';
+import { BalenciagaProductsDataset } from './platforms/balenciaga.js';
+import { BbcNewsDataset } from './platforms/bbc.js';
+import { BerlutiProductsDataset } from './platforms/berluti.js';
+import { BestBuyProductsDataset } from './platforms/bestbuy.js';
+import { BhProductsDataset } from './platforms/bh.js';
 import {
     BlueskyPostsDataset,
     BlueskyTopProfilesDataset,
-} from './platforms/bluesky';
+} from './platforms/bluesky.js';
 import {
     BookingHotelListingsDataset,
     BookingListingsSearchDataset,
-} from './platforms/booking';
-import { BottegaVenetaProductsDataset } from './platforms/bottega_veneta';
-import { CarsalesListingsDataset } from './platforms/carsales';
-import { CartersProductsDataset } from './platforms/carters';
-import { CelineProductsDataset } from './platforms/celine';
-import { ChanelProductsDataset } from './platforms/chanel';
-import { ChileautosChileDataset } from './platforms/chileautos';
-import { CnnNewsDataset } from './platforms/cnn';
-import { CompaniesEnrichedDataset } from './platforms/companies_enriched';
-import { CostcoProductsDataset } from './platforms/costco';
-import { CrateAndBarrelProductsDataset } from './platforms/crate_and_barrel';
+} from './platforms/booking.js';
+import { BottegaVenetaProductsDataset } from './platforms/bottega_veneta.js';
+import { CarsalesListingsDataset } from './platforms/carsales.js';
+import { CartersProductsDataset } from './platforms/carters.js';
+import { CelineProductsDataset } from './platforms/celine.js';
+import { ChanelProductsDataset } from './platforms/chanel.js';
+import { ChileautosChileDataset } from './platforms/chileautos.js';
+import { CnnNewsDataset } from './platforms/cnn.js';
+import { CompaniesEnrichedDataset } from './platforms/companies_enriched.js';
+import { CostcoProductsDataset } from './platforms/costco.js';
+import { CrateAndBarrelProductsDataset } from './platforms/crate_and_barrel.js';
 import {
     CreativeCommons3dModelsDataset,
     CreativeCommonsImagesDataset,
-} from './platforms/creative_commons';
-import { CrunchbaseCompaniesDataset } from './platforms/crunchbase';
-import { DelvauxProductsDataset } from './platforms/delvaux';
-import { DigikeyProductsDataset } from './platforms/digikey';
-import { DiorProductsDataset } from './platforms/dior';
-import { EbayProductsDataset } from './platforms/ebay';
-import { EmployeesEnrichedDataset } from './platforms/employees_enriched';
-import { EtsyProductsDataset } from './platforms/etsy';
+} from './platforms/creative_commons.js';
+import { CrunchbaseCompaniesDataset } from './platforms/crunchbase.js';
+import { DelvauxProductsDataset } from './platforms/delvaux.js';
+import { DigikeyProductsDataset } from './platforms/digikey.js';
+import { DiorProductsDataset } from './platforms/dior.js';
+import { EbayProductsDataset } from './platforms/ebay.js';
+import { EmployeesEnrichedDataset } from './platforms/employees_enriched.js';
+import { EtsyProductsDataset } from './platforms/etsy.js';
 import {
     FacebookCommentsDataset,
     FacebookCompanyReviewsDataset,
@@ -92,142 +92,142 @@ import {
     FacebookPostsByUrlDataset,
     FacebookProfilesDataset,
     FacebookReelsDataset,
-} from './platforms/facebook';
-import { FanaticsProductsDataset } from './platforms/fanatics';
-import { FendiProductsDataset } from './platforms/fendi';
-import { G2ProductsDataset, G2ReviewsDataset } from './platforms/g2';
-import { GithubRepositoriesDataset } from './platforms/github';
+} from './platforms/facebook.js';
+import { FanaticsProductsDataset } from './platforms/fanatics.js';
+import { FendiProductsDataset } from './platforms/fendi.js';
+import { G2ProductsDataset, G2ReviewsDataset } from './platforms/g2.js';
+import { GithubRepositoriesDataset } from './platforms/github.js';
 import {
     GlassdoorCompaniesDataset,
     GlassdoorJobsDataset,
     GlassdoorReviewsDataset,
-} from './platforms/glassdoor';
-import { GoodreadsBooksDataset } from './platforms/goodreads';
+} from './platforms/glassdoor.js';
+import { GoodreadsBooksDataset } from './platforms/goodreads.js';
 import {
     GoogleMapsFullInfoDataset,
     GoogleMapsReviewsDataset,
-} from './platforms/google_maps';
-import { GoogleNewsDataset } from './platforms/google_news';
+} from './platforms/google_maps.js';
+import { GoogleNewsDataset } from './platforms/google_news.js';
 import {
     GooglePlayReviewsDataset,
     GooglePlayStoreDataset,
-} from './platforms/google_play';
+} from './platforms/google_play.js';
 import {
     GoogleShoppingProductsDataset,
     GoogleShoppingSearchUsDataset,
-} from './platforms/google_shopping';
-import { HermesProductsDataset } from './platforms/hermes';
-import { HmProductsDataset } from './platforms/hm';
+} from './platforms/google_shopping.js';
+import { HermesProductsDataset } from './platforms/hermes.js';
+import { HmProductsDataset } from './platforms/hm.js';
 import {
     HomeDepotCaProductsDataset,
     HomeDepotUsProductsDataset,
-} from './platforms/home_depot';
-import { IkeaProductsDataset } from './platforms/ikea';
-import { ImdbMoviesDataset } from './platforms/imdb';
+} from './platforms/home_depot.js';
+import { IkeaProductsDataset } from './platforms/ikea.js';
+import { ImdbMoviesDataset } from './platforms/imdb.js';
 import {
     IndeedCompaniesDataset,
     IndeedJobsDataset,
-} from './platforms/indeed';
-import { InfocasasUruguayDataset } from './platforms/infocasas';
-import { Inmuebles24MexicoDataset } from './platforms/inmuebles24';
-import { KrogerProductsDataset } from './platforms/kroger';
+} from './platforms/indeed.js';
+import { InfocasasUruguayDataset } from './platforms/infocasas.js';
+import { Inmuebles24MexicoDataset } from './platforms/inmuebles24.js';
+import { KrogerProductsDataset } from './platforms/kroger.js';
 import {
     LazadaProductsDataset,
     LazadaProductsSearchDataset,
     LazadaReviewsDataset,
-} from './platforms/lazada';
-import { LaZBoyProductsDataset } from './platforms/lazboy';
-import { LegoProductsDataset } from './platforms/lego';
-import { LlBeanProductsDataset } from './platforms/llbean';
-import { LoeweProductsDataset } from './platforms/loewe';
-import { LowesProductsDataset } from './platforms/lowes';
-import { MacysProductsDataset } from './platforms/macys';
-import { MangoProductsDataset } from './platforms/mango';
-import { MantaBusinessesDataset } from './platforms/manta';
-import { MassimoDuttiProductsDataset } from './platforms/massimo_dutti';
-import { MattressFirmProductsDataset } from './platforms/mattress_firm';
-import { MediamarktProductsDataset } from './platforms/mediamarkt';
-import { MercadolivreProductsDataset } from './platforms/mercadolivre';
-import { MetrocuadradoPropertiesDataset } from './platforms/metrocuadrado';
-import { MicroCenterProductsDataset } from './platforms/microcenter';
-import { MontblancProductsDataset } from './platforms/montblanc';
-import { MouserProductsDataset } from './platforms/mouser';
-import { MoynatProductsDataset } from './platforms/moynat';
-import { MybobsProductsDataset } from './platforms/mybobs';
-import { MyntraProductsDataset } from './platforms/myntra';
-import { NaverProductsDataset } from './platforms/naver';
-import { NbaPlayersStatsDataset } from './platforms/nba';
-import { OlxBrazilDataset } from './platforms/olx';
-import { OtodomPolandDataset } from './platforms/otodom';
-import { OwlerCompaniesDataset } from './platforms/owler';
-import { OzonProductsDataset } from './platforms/ozon';
+} from './platforms/lazada.js';
+import { LaZBoyProductsDataset } from './platforms/lazboy.js';
+import { LegoProductsDataset } from './platforms/lego.js';
+import { LlBeanProductsDataset } from './platforms/llbean.js';
+import { LoeweProductsDataset } from './platforms/loewe.js';
+import { LowesProductsDataset } from './platforms/lowes.js';
+import { MacysProductsDataset } from './platforms/macys.js';
+import { MangoProductsDataset } from './platforms/mango.js';
+import { MantaBusinessesDataset } from './platforms/manta.js';
+import { MassimoDuttiProductsDataset } from './platforms/massimo_dutti.js';
+import { MattressFirmProductsDataset } from './platforms/mattress_firm.js';
+import { MediamarktProductsDataset } from './platforms/mediamarkt.js';
+import { MercadolivreProductsDataset } from './platforms/mercadolivre.js';
+import { MetrocuadradoPropertiesDataset } from './platforms/metrocuadrado.js';
+import { MicroCenterProductsDataset } from './platforms/microcenter.js';
+import { MontblancProductsDataset } from './platforms/montblanc.js';
+import { MouserProductsDataset } from './platforms/mouser.js';
+import { MoynatProductsDataset } from './platforms/moynat.js';
+import { MybobsProductsDataset } from './platforms/mybobs.js';
+import { MyntraProductsDataset } from './platforms/myntra.js';
+import { NaverProductsDataset } from './platforms/naver.js';
+import { NbaPlayersStatsDataset } from './platforms/nba.js';
+import { OlxBrazilDataset } from './platforms/olx.js';
+import { OtodomPolandDataset } from './platforms/otodom.js';
+import { OwlerCompaniesDataset } from './platforms/owler.js';
+import { OzonProductsDataset } from './platforms/ozon.js';
 import {
     PinterestPostsDataset,
     PinterestProfilesDataset,
-} from './platforms/pinterest';
-import { PitchBookCompaniesDataset } from './platforms/pitchbook';
-import { PradaProductsDataset } from './platforms/prada';
-import { ProperatiPropertiesDataset } from './platforms/properati';
-import { QuoraPostsDataset } from './platforms/quora';
-import { RaymourFlaniganProductsDataset } from './platforms/raymour_flanigan';
-import { RealtorInternationalDataset } from './platforms/realtor';
+} from './platforms/pinterest.js';
+import { PitchBookCompaniesDataset } from './platforms/pitchbook.js';
+import { PradaProductsDataset } from './platforms/prada.js';
+import { ProperatiPropertiesDataset } from './platforms/properati.js';
+import { QuoraPostsDataset } from './platforms/quora.js';
+import { RaymourFlaniganProductsDataset } from './platforms/raymour_flanigan.js';
+import { RealtorInternationalDataset } from './platforms/realtor.js';
 import {
     RedditCommentsDataset,
     RedditPostsDataset,
-} from './platforms/reddit';
-import { RonaProductsDataset } from './platforms/rona';
-import { SephoraProductsDataset } from './platforms/sephora';
-import { SheinProductsDataset } from './platforms/shein';
-import { ShopeeProductsDataset } from './platforms/shopee';
-import { SleepNumberProductsDataset } from './platforms/sleep_number';
-import { SlintelCompaniesDataset } from './platforms/slintel';
-import { SnapchatPostsDataset } from './platforms/snapchat';
-import { TargetProductsDataset } from './platforms/target';
-import { ToctocPropertiesDataset } from './platforms/toctoc';
-import { TokopediaProductsDataset } from './platforms/tokopedia';
-import { ToysRUsProductsDataset } from './platforms/toysrus';
-import { TrustpilotReviewsDataset } from './platforms/trustpilot';
-import { TrustRadiusReviewsDataset } from './platforms/trustradius';
-import { UsLawyersDataset } from './platforms/us_lawyers';
-import { VentureRadarCompaniesDataset } from './platforms/ventureradar';
-import { VimeoVideosDataset } from './platforms/vimeo';
+} from './platforms/reddit.js';
+import { RonaProductsDataset } from './platforms/rona.js';
+import { SephoraProductsDataset } from './platforms/sephora.js';
+import { SheinProductsDataset } from './platforms/shein.js';
+import { ShopeeProductsDataset } from './platforms/shopee.js';
+import { SleepNumberProductsDataset } from './platforms/sleep_number.js';
+import { SlintelCompaniesDataset } from './platforms/slintel.js';
+import { SnapchatPostsDataset } from './platforms/snapchat.js';
+import { TargetProductsDataset } from './platforms/target.js';
+import { ToctocPropertiesDataset } from './platforms/toctoc.js';
+import { TokopediaProductsDataset } from './platforms/tokopedia.js';
+import { ToysRUsProductsDataset } from './platforms/toysrus.js';
+import { TrustpilotReviewsDataset } from './platforms/trustpilot.js';
+import { TrustRadiusReviewsDataset } from './platforms/trustradius.js';
+import { UsLawyersDataset } from './platforms/us_lawyers.js';
+import { VentureRadarCompaniesDataset } from './platforms/ventureradar.js';
+import { VimeoVideosDataset } from './platforms/vimeo.js';
 import {
     WalmartProductsDataset,
     WalmartSellersInfoDataset,
-} from './platforms/walmart';
-import { WayfairProductsDataset } from './platforms/wayfair';
-import { WebmotorsBrasilDataset } from './platforms/webmotors';
-import { WikipediaArticlesDataset } from './platforms/wikipedia';
-import { WildberriesProductsDataset } from './platforms/wildberries';
+} from './platforms/walmart.js';
+import { WayfairProductsDataset } from './platforms/wayfair.js';
+import { WebmotorsBrasilDataset } from './platforms/webmotors.js';
+import { WikipediaArticlesDataset } from './platforms/wikipedia.js';
+import { WildberriesProductsDataset } from './platforms/wildberries.js';
 import {
     WorldPopulationDataset,
     WorldZipcodesDataset,
-} from './platforms/world_data';
-import { XingProfilesDataset } from './platforms/xing';
-import { YahooFinanceBusinessesDataset } from './platforms/yahoo_finance';
-import { YapoChileDataset } from './platforms/yapo';
+} from './platforms/world_data.js';
+import { XingProfilesDataset } from './platforms/xing.js';
+import { YahooFinanceBusinessesDataset } from './platforms/yahoo_finance.js';
+import { YapoChileDataset } from './platforms/yapo.js';
 import {
     YelpBusinessesDataset,
     YelpReviewsDataset,
-} from './platforms/yelp';
+} from './platforms/yelp.js';
 import {
     YoutubeCommentsDataset,
     YoutubeProfilesDataset,
     YoutubeVideosDataset,
-} from './platforms/youtube';
-import { YslProductsDataset } from './platforms/ysl';
-import { ZalandoProductsDataset } from './platforms/zalando';
+} from './platforms/youtube.js';
+import { YslProductsDataset } from './platforms/ysl.js';
+import { ZalandoProductsDataset } from './platforms/zalando.js';
 import {
     ZaraProductsDataset,
     ZaraHomeProductsDataset,
-} from './platforms/zara';
+} from './platforms/zara.js';
 import {
     ZillowPriceHistoryDataset,
     ZillowPropertiesDataset,
-} from './platforms/zillow';
-import { ZonapropArgentinaDataset } from './platforms/zonaprop';
-import { ZoomInfoCompaniesDataset } from './platforms/zoominfo';
-import { ZooplaPropertiesDataset } from './platforms/zoopla';
+} from './platforms/zillow.js';
+import { ZonapropArgentinaDataset } from './platforms/zonaprop.js';
+import { ZoomInfoCompaniesDataset } from './platforms/zoominfo.js';
+import { ZooplaPropertiesDataset } from './platforms/zoopla.js';
 
 export class DatasetsClient {
     private transport: Transport;

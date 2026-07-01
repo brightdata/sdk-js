@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class PinterestPostsDataset extends BaseDataset {
     readonly datasetId = 'gd_lk0sjs4d21kdr7cnlv';

@@ -1,18 +1,18 @@
 import type { z } from 'zod';
-import { Transport, assertResponse } from '../../core/transport';
-import { API_ENDPOINT } from '../../utils/constants';
-import { parseResponse } from '../../utils/misc';
-import { getLogger } from '../../utils/logger';
-import { assertSchema } from '../../schemas/utils';
+import { Transport, assertResponse } from '../../core/transport.js';
+import { API_ENDPOINT } from '../../utils/constants.js';
+import { parseResponse } from '../../utils/misc.js';
+import { getLogger } from '../../utils/logger.js';
+import { assertSchema } from '../../schemas/utils.js';
 import {
     DiscoverOptionsSchema,
     DiscoverQuerySchema,
     DiscoverTriggerResponseSchema,
     DiscoverPollResponseSchema,
     type DiscoverOptions,
-} from '../../schemas/discover';
-import { DiscoverJob } from './job';
-import type { DiscoverResult } from './result';
+} from '../../schemas/discover.js';
+import { DiscoverJob } from './job.js';
+import type { DiscoverResult } from './result.js';
 
 const logger = getLogger('discover');
 

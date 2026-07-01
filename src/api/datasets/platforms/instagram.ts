@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class InstagramProfilesDataset extends BaseDataset {
     readonly datasetId = 'gd_l1vikfch901nx3by4';

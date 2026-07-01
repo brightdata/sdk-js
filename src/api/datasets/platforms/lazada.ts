@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class LazadaProductsDataset extends BaseDataset {
     readonly datasetId = 'gd_lk14r4zxuiw2uxpk6';

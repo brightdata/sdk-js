@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class WikipediaArticlesDataset extends BaseDataset {
     readonly datasetId = 'gd_lr9978962kkjr3nx49';

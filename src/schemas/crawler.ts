@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { URLParamSchema } from './client';
+import { URLParamSchema } from './client.js';
 
 export const CrawlInputSchema = URLParamSchema;
 

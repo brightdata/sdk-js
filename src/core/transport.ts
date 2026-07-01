@@ -16,7 +16,7 @@ import {
     RETRY_STATUSES,
     RETRY_METHODS,
     RETRY_ERROR_CODES,
-} from '../utils/constants';
+} from '../utils/constants.js';
 import {
     APIError,
     AuthenticationError,
@@ -24,10 +24,10 @@ import {
     NetworkError,
     NetworkTimeoutError,
     ValidationError,
-} from '../utils/errors';
-import { getAuthHeaders } from '../utils/auth';
-import { getLogger, logRequest } from '../utils/logger';
-import { RateLimiter } from './rate-limiter';
+} from '../utils/errors.js';
+import { getAuthHeaders } from '../utils/auth.js';
+import { getLogger, logRequest } from '../utils/logger.js';
+import { RateLimiter } from './rate-limiter.js';
 
 const { dns, retry } = interceptors;
 

@@ -1,1 +1,1 @@
-export { BrowserService } from './service';
+export { BrowserService } from './service.js';

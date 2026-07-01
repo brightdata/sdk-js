@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class RaymourFlaniganProductsDataset extends BaseDataset {
     readonly datasetId = 'gd_lf8cwb8wxoiqarizb';

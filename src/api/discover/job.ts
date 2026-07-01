@@ -1,9 +1,9 @@
-import { getLogger } from '../../utils/logger';
-import { sleep } from '../../utils/misc';
-import { TimeoutError, APIError } from '../../utils/errors';
-import { Deadline } from '../../utils/deadline';
-import { DiscoverResult, type DiscoverResultItem } from './result';
-import type { DiscoverOperations } from '../../types/discover';
+import { getLogger } from '../../utils/logger.js';
+import { sleep } from '../../utils/misc.js';
+import { TimeoutError, APIError } from '../../utils/errors.js';
+import { Deadline } from '../../utils/deadline.js';
+import { DiscoverResult, type DiscoverResultItem } from './result.js';
+import type { DiscoverOperations } from '../../types/discover.js';
 
 const logger = getLogger('discover.job');
 

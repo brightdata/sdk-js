@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class GoogleShoppingProductsDataset extends BaseDataset {
     readonly datasetId = 'gd_ltppk50q18kdw67omz';

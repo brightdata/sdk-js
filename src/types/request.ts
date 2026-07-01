@@ -1,4 +1,4 @@
-import type { BRDError } from '../utils/errors';
+import type { BRDError } from '../utils/errors.js';
 
 export type {
     FetchingOptions,
@@ -6,10 +6,10 @@ export type {
     ScrapeOptions,
     SearchOptions,
     SearchEngine,
-} from '../schemas/request';
+} from '../schemas/request.js';
 
 // Re-derive intersection types from re-exported bases
-import type { RequestOptions } from '../schemas/request';
+import type { RequestOptions } from '../schemas/request.js';
 
 export interface RequestJSONOptions extends RequestOptions {
     format: 'json';

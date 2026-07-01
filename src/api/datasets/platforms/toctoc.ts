@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class ToctocPropertiesDataset extends BaseDataset {
     readonly datasetId = 'gd_lgfdx3l01behlrboh7';

@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class WalmartProductsDataset extends BaseDataset {
     readonly datasetId = 'gd_l95fol7l1ru6rlo116';

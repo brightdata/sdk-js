@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class GooglePlayReviewsDataset extends BaseDataset {
     readonly datasetId = 'gd_m6zagkt024uwvvwuyu';

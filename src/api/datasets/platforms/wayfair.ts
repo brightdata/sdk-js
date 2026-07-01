@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class WayfairProductsDataset extends BaseDataset {
     readonly datasetId = 'gd_ltr9ne3p24zrhrbu28';

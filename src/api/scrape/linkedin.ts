@@ -6,17 +6,17 @@ import type {
     UrlFilter,
     LinkedinJobFilter,
     LinkedinProfileFilter,
-} from '../../types/datasets';
+} from '../../types/datasets.js';
 import {
     DatasetOptionsSchema,
     DatasetMixedInputSchema,
-} from '../../schemas/datasets';
+} from '../../schemas/datasets.js';
 import {
     LinkedinProfileFilterSchema,
     LinkedinJobFilterSchema,
-} from '../../schemas/filters/linkedin';
-import { assertSchema } from '../../schemas/utils';
-import { BaseAPI, type BaseAPIOptions } from './base';
+} from '../../schemas/filters/linkedin.js';
+import { assertSchema } from '../../schemas/utils.js';
+import { BaseAPI, type BaseAPIOptions } from './base.js';
 
 const DATASET_ID = {
     PROFILE: 'gd_l1viktl72bvl7bjuj0',

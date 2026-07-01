@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class AmazonProductsDataset extends BaseDataset {
     readonly datasetId = 'gd_l7q7dkf244hwjntr0';

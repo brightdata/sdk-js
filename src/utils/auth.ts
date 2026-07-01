@@ -1,4 +1,4 @@
-import { USER_AGENT } from './constants';
+import { USER_AGENT } from './constants.js';
 
 export const getAuthHeaders = (apiKey: string) => ({
     Authorization: `Bearer ${apiKey}`,

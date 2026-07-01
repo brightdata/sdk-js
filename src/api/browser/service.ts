@@ -1,6 +1,6 @@
-import { assertSchema } from '../../schemas/utils';
-import { BrowserConnectOptionsSchema } from '../../schemas/browser';
-import type { BrowserConnectOptions } from '../../schemas/browser';
+import { assertSchema } from '../../schemas/utils.js';
+import { BrowserConnectOptionsSchema } from '../../schemas/browser.js';
+import type { BrowserConnectOptions } from '../../schemas/browser.js';
 
 export class BrowserService {
     static readonly DEFAULT_HOST = 'brd.superproxy.io';

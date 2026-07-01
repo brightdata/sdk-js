@@ -1,3 +1,3 @@
-export { DatasetsClient } from './client';
-export { BaseDataset } from './base';
-export type * from './types';
+export { DatasetsClient } from './client.js';
+export { BaseDataset } from './base.js';
+export type * from './types.js';

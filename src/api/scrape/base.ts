@@ -1,17 +1,17 @@
-import { API_ENDPOINT } from '../../utils/constants';
-import { getLogger } from '../../utils/logger';
-import { Transport, assertResponse } from '../../core/transport';
-import { dropEmptyKeys, parseJSON, parseResponse } from '../../utils/misc';
-import { SnapshotMetaResponseSchema } from '../../schemas/responses';
-import { ScrapeJob } from './job';
+import { API_ENDPOINT } from '../../utils/constants.js';
+import { getLogger } from '../../utils/logger.js';
+import { Transport, assertResponse } from '../../core/transport.js';
+import { dropEmptyKeys, parseJSON, parseResponse } from '../../utils/misc.js';
+import { SnapshotMetaResponseSchema } from '../../schemas/responses.js';
+import { ScrapeJob } from './job.js';
 import type {
     DatasetOptions,
     OrchestrateOptions,
     UnknownRecord,
     SnapshotFormat,
     SnapshotOperations,
-} from '../../types/datasets';
-import type { ScrapeResult } from '../../models/result';
+} from '../../types/datasets.js';
+import type { ScrapeResult } from '../../models/result.js';
 
 interface WebhookDisabled {
     notify: undefined;

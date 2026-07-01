@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class YapoChileDataset extends BaseDataset {
     readonly datasetId = 'gd_lgfcz12mk6og7lvhs';

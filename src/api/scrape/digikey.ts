@@ -3,13 +3,13 @@ import type {
     DiscoverOptions,
     OrchestrateOptions,
     UnknownRecord,
-} from '../../types/datasets';
+} from '../../types/datasets.js';
 import {
     DatasetOptionsSchema,
     DatasetMixedInputSchema,
-} from '../../schemas/datasets';
-import { assertSchema } from '../../schemas/utils';
-import { BaseAPI, type BaseAPIOptions } from './base';
+} from '../../schemas/datasets.js';
+import { assertSchema } from '../../schemas/utils.js';
+import { BaseAPI, type BaseAPIOptions } from './base.js';
 
 const DATASET_ID = {
     PRODUCT: 'gd_lj74waf72416ro0k65',

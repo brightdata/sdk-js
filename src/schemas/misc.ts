@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { FilenameSchema } from './shared';
+import { FilenameSchema } from './shared.js';
 
 const ContentFormatSchema = z
     .enum(['json', 'txt', 'JSON', 'TXT'])

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { FilenameSchema } from './shared';
+import { FilenameSchema } from './shared.js';
 
 const SnapshotFormatSchema = z
     .enum(['json', 'csv', 'ndjson', 'jsonl'])

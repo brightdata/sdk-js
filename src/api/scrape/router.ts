@@ -1,16 +1,16 @@
-import { LinkedinAPI } from './linkedin';
-import { SnapshotAPI } from './snapshot';
-import { ChatgptAPI } from './chatgpt';
-import { AmazonAPI } from './amazon';
-import { BaseAPIOptions } from './base';
-import { InstagramAPI } from './instagram';
-import { FacebookAPI } from './facebook';
-import { PerplexityAPI } from './perplexity';
-import { TiktokAPI } from './tiktok';
-import { YoutubeAPI } from './youtube';
-import { DigikeyAPI } from './digikey';
-import { PinterestAPI } from './pinterest';
-import { RedditAPI } from './reddit';
+import { LinkedinAPI } from './linkedin.js';
+import { SnapshotAPI } from './snapshot.js';
+import { ChatgptAPI } from './chatgpt.js';
+import { AmazonAPI } from './amazon.js';
+import { BaseAPIOptions } from './base.js';
+import { InstagramAPI } from './instagram.js';
+import { FacebookAPI } from './facebook.js';
+import { PerplexityAPI } from './perplexity.js';
+import { TiktokAPI } from './tiktok.js';
+import { YoutubeAPI } from './youtube.js';
+import { DigikeyAPI } from './digikey.js';
+import { PinterestAPI } from './pinterest.js';
+import { RedditAPI } from './reddit.js';
 
 export class ScrapeRouter {
     snapshot: SnapshotAPI;

@@ -1,5 +1,5 @@
-import { SearchAPI } from '../unlocker/search';
-import type { RequestAPIOptions } from '../unlocker/request';
+import { SearchAPI } from '../unlocker/search.js';
+import type { RequestAPIOptions } from '../unlocker/request.js';
 import type {
     SearchOptions,
     SearchJSONOptions,
@@ -8,7 +8,7 @@ import type {
     BatchJSONResponse,
     BatchRawResponse,
     AnyResponse,
-} from '../../types/request';
+} from '../../types/request.js';
 
 type SearchMethodOptions = Omit<SearchOptions, 'searchEngine'>;
 type SearchMethodJSONOptions = Omit<SearchJSONOptions, 'searchEngine'>;

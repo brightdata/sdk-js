@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class BlueskyPostsDataset extends BaseDataset {
     readonly datasetId = 'gd_m6hn4r5s27zfhc7w4';

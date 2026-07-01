@@ -54,7 +54,7 @@
     "format": "prettier . --write",
     "typecheck": "tsc --noEmit --project tsconfig.json",
     "sanity": "npm run lint && npm run typecheck",
-    "build": "npm run build:clean && rollup -c && npm run build:dts",
+    "build": "npm run build:clean && rollup -c && npm run build:dts && node scripts/smoke-dist.mjs",
     "build:dts": "tsc --project tsconfig.dts.json",
     "build:clean": "rm -rf ./dist",
     "build:dev": "npm run build:clean && rollup --watch -c",

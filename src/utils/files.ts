@@ -2,11 +2,11 @@ import { createWriteStream, type Stats } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { type Dispatcher } from 'undici';
-import { getLogger } from './logger';
-import { BRDError, FSError } from './errors';
-import { isStrArray } from './misc';
-import type { SingleResponse, BatchResponse } from '../types/request';
-import type { ContentFormat } from '../types/client';
+import { getLogger } from './logger.js';
+import { BRDError, FSError } from './errors.js';
+import { isStrArray } from './misc.js';
+import type { SingleResponse, BatchResponse } from '../types/request.js';
+import type { ContentFormat } from '../types/client.js';
 
 const logger = getLogger('utils.files');
 

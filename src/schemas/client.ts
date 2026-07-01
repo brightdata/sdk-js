@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ZoneNameSchema } from './shared';
+import { ZoneNameSchema } from './shared.js';
 
 export const ApiKeySchema = z
     .string()

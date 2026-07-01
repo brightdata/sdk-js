@@ -1,6 +1,6 @@
-import { BRDError, TimeoutError } from './errors';
-import { sleep } from './misc';
-import { getLogger } from './logger';
+import { BRDError, TimeoutError } from './errors.js';
+import { sleep } from './misc.js';
+import { getLogger } from './logger.js';
 
 const logger = getLogger('polling');
 
