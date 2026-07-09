@@ -30,7 +30,7 @@ const html = await client.scrapeUrl('https://example.com');
 console.log(html);
 
 // Search the web
-const results = await client.search.google('pizza restaurants');
+const results = await client.search.google('pizza restaurants', { country: 'us' });
 console.log(results);
 ```
 
@@ -116,6 +116,9 @@ const results = await client.search.google('pizza', {
     format: 'json',
 });
 ```
+> **Note:** If `country` is not specified, requests exit through an arbitrary
+> proxy location, so results may be geo-located to an unexpected country.
+> Always pass `country` when you need consistent, localized results.
 
 ### Platform scrapers
 
@@ -337,6 +340,8 @@ BRIGHTDATA_BROWSERAPI_USERNAME=your_browser_username # Optional, for Browser API
 BRIGHTDATA_BROWSERAPI_PASSWORD=your_browser_password # Optional, for Browser API
 BRIGHTDATA_VERBOSE=1                                  # Optional, enable verbose logging
 ```
+> **Tip:** When loading these from a `.env` file with `node --env-file=.env`,
+> note that variables already set in your shell take precedence over the file.
 
 ### Client Options
 
@@ -413,6 +418,40 @@ try {
 ```
 
 **Error types:** `ValidationError`, `AuthenticationError`, `ZoneError`, `NetworkError`, `NetworkTimeoutError`, `TimeoutError`, `APIError`, `DataNotReadyError`, `FSError`
+
+## Troubleshooting
+
+### Windows & corporate networks
+
+| Problem | Fix |
+|---|---|
+| `npm.ps1 cannot be loaded because running scripts is disabled` (PowerShell) | Use **cmd** instead of PowerShell, or run `npm.cmd <command>`, or run `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`. If overridden by Group Policy, contact your IT team. |
+| `SELF_SIGNED_CERT_IN_CHAIN` during `npm install` | Your network uses SSL inspection. Point npm to your corporate root certificate: `npm config set cafile "C:\path\to\corporate-root.cer"` |
+| Certificate errors at runtime | Set the env variable `NODE_EXTRA_CA_CERTS=C:\path\to\corporate-root.cer` so Node trusts your corporate certificate. |
+
+### AuthenticationError: invalid API key
+
+If you get this error, check the following in order:
+
+1. **Verify the token itself** works, outside the SDK:
+   ```bash
+   curl -H "Authorization: Bearer YOUR_TOKEN" https://api.brightdata.com/zone/get_active_zones
+   ```
+   If this fails, generate a new API key with **admin** permissions in the
+   [control panel](https://brightdata.com/cp/setting/users). Note the SDK needs
+   an account-level API token — not a zone password.
+2. **Check for shell overrides.** Environment variables set in your shell take
+   precedence over `.env` files loaded with `node --env-file=.env`. Run
+   `set BRIGHTDATA` (Windows) or `env | grep BRIGHTDATA` (macOS/Linux) and clear
+   any leftover values.
+3. **Check your `.env` file:** no quotes, no spaces around `=`, no trailing
+   whitespace, and the token copied exactly (including dashes). Prefer LF line
+   endings.
+4. **Print what actually loaded:**
+   ```js
+   console.log(JSON.stringify(process.env.BRIGHTDATA_API_TOKEN));
+   ```
+   Hidden characters like `\r` will be visible in the output.
 
 ## Support
 
