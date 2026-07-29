@@ -16,7 +16,8 @@ import {
     DEFAULT_WEB_UNLOCKER_ZONE,
     DEFAULT_SERP_ZONE,
 } from './utils/constants.js';
-import { ValidationError } from './utils/errors.js';
+import { ValidationError, AuthenticationError } from './utils/errors.js';
+import { readCliCredentials, type AuthSource } from './utils/cli-credentials.js';
 import { maskKey } from './utils/misc.js';
 import { writeContent, stringifyResults, getFilename } from './utils/files.js';
 import { assertSchema } from './schemas/utils.js';
@@ -107,6 +108,7 @@ export class bdclient {
         );
         const {
             BRIGHTDATA_API_TOKEN,
+            BRIGHTDATA_API_KEY,
             BRIGHTDATA_VERBOSE,
             BRIGHTDATA_WEB_UNLOCKER_ZONE,
             BRIGHTDATA_SERP_ZONE,
@@ -124,9 +126,33 @@ export class bdclient {
         setupLogger(opt.logLevel, opt.structuredLogging, isVerbose);
         this.logger.info('initializing Bright Data SDK client');
 
+        // Resolve the API token by precedence: param → env → CLI store → error,
+        // recording how it was obtained (authSource) for the User-Agent.
+        let resolved: string | undefined;
+        let authSource: AuthSource;
+        if (opt.apiKey) {
+            resolved = opt.apiKey.trim();
+            authSource = 'param';
+        } else if (BRIGHTDATA_API_TOKEN || BRIGHTDATA_API_KEY) {
+            // `||` (not `??`): an empty BRIGHTDATA_API_TOKEN falls through to KEY.
+            resolved = (BRIGHTDATA_API_TOKEN || BRIGHTDATA_API_KEY)!.trim();
+            authSource = 'env';
+        } else {
+            const cliKey = readCliCredentials();
+            if (cliKey) {
+                resolved = cliKey;
+                authSource = 'cli_credentials';
+            } else {
+                throw new AuthenticationError(
+                    'No API token found. Run `npx @brightdata/cli login` or set ' +
+                        'BRIGHTDATA_API_TOKEN. Get a token at ' +
+                        'https://brightdata.com/cp/api_tokens',
+                );
+            }
+        }
         const apiKey = assertSchema(
             ApiKeySchema,
-            opt.apiKey || BRIGHTDATA_API_TOKEN,
+            resolved,
             'bdclient.options.apiKey',
         );
 
@@ -135,6 +161,7 @@ export class bdclient {
 
         this.transport = new Transport({
             apiKey,
+            authSource,
             timeout: opt.timeout,
             rateLimit: opt.rateLimit,
             ratePeriod: opt.ratePeriod,

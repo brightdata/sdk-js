@@ -26,6 +26,7 @@ import {
     ValidationError,
 } from '../utils/errors.js';
 import { getAuthHeaders } from '../utils/auth.js';
+import type { AuthSource } from '../utils/cli-credentials.js';
 import { getLogger, logRequest } from '../utils/logger.js';
 import { RateLimiter } from './rate-limiter.js';
 
@@ -46,6 +47,7 @@ function isAbortTimeout(err: Error): boolean {
 
 export interface TransportOptions {
     apiKey: string;
+    authSource?: AuthSource;
     timeout?: number;
     connections?: number;
     rateLimit?: number;
@@ -87,7 +89,7 @@ export class Transport {
     };
 
     constructor(opts: TransportOptions) {
-        this.authHeaders = getAuthHeaders(opts.apiKey);
+        this.authHeaders = getAuthHeaders(opts.apiKey, opts.authSource);
         this.defaultTimeout = opts.timeout ?? DEFAULT_TIMEOUT;
         this.rateLimiter =
             opts.rateLimit && opts.rateLimit > 0
