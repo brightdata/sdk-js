@@ -143,13 +143,24 @@ export class Transport {
             (i): i is Dispatcher.DispatcherComposeInterceptor => i !== null,
         );
 
-        this.agent = new Agent({
+        const rawAgent = new Agent({
             connections: opts.connections ?? DEFAULT_CONNECTIONS,
             keepAliveTimeout: DEFAULT_KEEP_ALIVE_TIMEOUT,
             keepAliveMaxTimeout: DEFAULT_KEEP_ALIVE_MAX_TIMEOUT,
             headersTimeout: this.defaultTimeout,
             bodyTimeout: this.defaultTimeout,
-        }).compose(...interceptorChain);
+        });
+        // `.compose()` itself is missing on Bun's bundled undici (its `Agent` is a
+        // bare, largely-inert stub — no `dispatch`/`close`/`destroy` either; Bun's
+        // `request()`/`stream()` ignore the `dispatcher` option entirely and run
+        // through Bun's own native HTTP client regardless). Guard the call itself,
+        // not just the interceptors passed to it, so construction never throws.
+        // Under Bun this means requests still go out, but none of Transport's
+        // tuning (connections/timeouts/retry/DNS-cache) has any effect there.
+        this.agent =
+            typeof rawAgent.compose === 'function'
+                ? rawAgent.compose(...interceptorChain)
+                : rawAgent;
         registerOpenTransport();
     }
 
@@ -278,7 +289,12 @@ export class Transport {
         this.closed = true;
         unregisterOpenTransport();
         this.rateLimiter?.destroy();
-        await (this.agent as Agent).close();
+        // Bun's stubbed Agent (see constructor) has no `close()` either — skip
+        // rather than throw when the runtime doesn't provide it.
+        const agent = this.agent as Partial<Agent>;
+        if (typeof agent.close === 'function') {
+            await agent.close();
+        }
     }
 
     private log(

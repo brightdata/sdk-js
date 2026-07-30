@@ -351,7 +351,7 @@ console.log(`Saved to: ${filePath}`);
 
 ### Runtime support
 
-Node.js (>= 20) is the supported and tested runtime. The SDK also runs under Bun, with one caveat: Bun's bundled `undici` omits the optional `dns` interceptor, so DNS-caching is disabled there (requests fall back to the platform resolver and work normally). The SDK detects this automatically and skips the missing interceptor rather than failing.
+Node.js (>= 20) is the supported and tested runtime. The SDK also runs under Bun without crashing, but with a real caveat: Bun's bundled `undici` provides only a bare-bones `Agent` (no `compose()`, no `close()`, no custom `dispatch`), and Bun's `request()`/`stream()` ignore the `dispatcher` option entirely, routing through Bun's own native HTTP client instead. In practice this means requests still succeed under Bun, but none of Transport's tuning — connection pooling, keep-alive, custom timeouts, automatic retry on 429/500/502/503/504, and DNS caching — has any effect there; Bun's own defaults apply instead. The SDK detects the missing capabilities automatically (never crashes construction or `close()`), rather than failing.
 
 ### API Token
 
