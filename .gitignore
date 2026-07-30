@@ -94,3 +94,7 @@ logs
 *.log
 test.mjs
 test.js
+
+# Local-only agent context files (not for commit)
+CLAUDE.md
+AGENTS.md

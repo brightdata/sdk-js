@@ -17,7 +17,11 @@ export const RequestOptionsBaseSchema = z.object({
         .transform((v) => v.toUpperCase() as 'GET' | 'POST')
         .optional(),
     format: z.enum(['json', 'raw']).optional(),
-    dataFormat: z.enum(['html', 'markdown', 'screenshot']).optional(),
+    dataFormat: z
+        // 'md' is accepted as a convenience alias for 'markdown'
+        .enum(['html', 'markdown', 'md', 'screenshot'])
+        .transform((v) => (v === 'md' ? 'markdown' : v))
+        .optional(),
 });
 
 export const FetchingOptionsSchema = z.object({

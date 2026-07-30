@@ -45,6 +45,40 @@ function isAbortTimeout(err: Error): boolean {
     );
 }
 
+// A single shared `beforeExit` listener tracks every open Transport via a
+// counter, instead of one listener per instance. Registering a listener per
+// Transport tripped Node's MaxListenersExceededWarning once an app created
+// more than ~10 clients. The listener is installed lazily on the first open
+// Transport and removed again once the last one is closed.
+let openTransportCount = 0;
+let beforeExitListener: (() => void) | null = null;
+
+function warnUnclosedTransports(): void {
+    if (openTransportCount > 0) {
+        console.warn(
+            `[brightdata-sdk] ${openTransportCount} Transport(s) were not closed. ` +
+                'Call client.close() or use "await using client = new bdclient()" ' +
+                'to avoid keeping the process alive.',
+        );
+    }
+}
+
+function registerOpenTransport(): void {
+    openTransportCount++;
+    if (!beforeExitListener) {
+        beforeExitListener = warnUnclosedTransports;
+        process.on('beforeExit', beforeExitListener);
+    }
+}
+
+function unregisterOpenTransport(): void {
+    if (openTransportCount > 0) openTransportCount--;
+    if (openTransportCount === 0 && beforeExitListener) {
+        process.removeListener('beforeExit', beforeExitListener);
+        beforeExitListener = null;
+    }
+}
+
 export interface TransportOptions {
     apiKey: string;
     authSource?: AuthSource;
@@ -77,16 +111,6 @@ export class Transport {
     private rateLimiter: RateLimiter | null;
     private closed = false;
     private logger = getLogger('transport');
-
-    private onBeforeExit = () => {
-        if (!this.closed) {
-            console.warn(
-                '[brightdata-sdk] Transport was not closed. ' +
-                    'Call client.close() or use "await using client = new bdclient()" ' +
-                    'to avoid keeping the process alive.',
-            );
-        }
-    };
 
     constructor(opts: TransportOptions) {
         this.authHeaders = getAuthHeaders(opts.apiKey, opts.authSource);
@@ -126,7 +150,7 @@ export class Transport {
             headersTimeout: this.defaultTimeout,
             bodyTimeout: this.defaultTimeout,
         }).compose(...interceptorChain);
-        process.on('beforeExit', this.onBeforeExit);
+        registerOpenTransport();
     }
 
     get headers(): Record<string, string> {
@@ -252,7 +276,7 @@ export class Transport {
     async close(): Promise<void> {
         if (this.closed) return;
         this.closed = true;
-        process.removeListener('beforeExit', this.onBeforeExit);
+        unregisterOpenTransport();
         this.rateLimiter?.destroy();
         await (this.agent as Agent).close();
     }

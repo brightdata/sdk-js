@@ -199,3 +199,38 @@ describe('bdclient - Lazy initialization', () => {
         expect(keys).toContain('datasets');
     });
 });
+
+describe('bdclient - dataFormat md alias', () => {
+    test("dataFormat: 'md' is sent to the API as 'markdown'", async () => {
+        vi.mocked(Transport.prototype.request).mockClear();
+        const client = new bdclient({
+            apiKey: 'test_token_1234567890abcdef',
+            autoCreateZones: false,
+        });
+        await client.scrapeUrl('https://example.com', { dataFormat: 'md' });
+
+        const body = JSON.parse(
+            vi.mocked(Transport.prototype.request).mock.calls[0][1]
+                ?.body as string,
+        );
+        expect(body.data_format).toBe('markdown');
+    });
+});
+
+describe('bdclient - API key env fallback', () => {
+    test('accepts BRIGHTDATA_API_KEY when BRIGHTDATA_API_TOKEN is unset', () => {
+        const { BRIGHTDATA_API_TOKEN, BRIGHTDATA_API_KEY } = process.env;
+        delete process.env.BRIGHTDATA_API_TOKEN;
+        process.env.BRIGHTDATA_API_KEY = 'env_key_1234567890abcdef';
+        try {
+            expect(() => new bdclient({ autoCreateZones: false })).not.toThrow();
+        } finally {
+            if (BRIGHTDATA_API_TOKEN === undefined)
+                delete process.env.BRIGHTDATA_API_TOKEN;
+            else process.env.BRIGHTDATA_API_TOKEN = BRIGHTDATA_API_TOKEN;
+            if (BRIGHTDATA_API_KEY === undefined)
+                delete process.env.BRIGHTDATA_API_KEY;
+            else process.env.BRIGHTDATA_API_KEY = BRIGHTDATA_API_KEY;
+        }
+    });
+});

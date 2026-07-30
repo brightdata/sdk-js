@@ -77,8 +77,10 @@ export class DiscoverJob {
             }
 
             if (response.status === 'error' || response.status === 'failed') {
+                const detail = response.error || response.message;
                 throw new APIError(
-                    `Discover task ${this.taskId} failed with status: ${response.status}`,
+                    `Discover task ${this.taskId} failed with status: ${response.status}` +
+                        (detail ? ` — ${detail}` : ''),
                 );
             }
 

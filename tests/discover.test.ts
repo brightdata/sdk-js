@@ -125,6 +125,39 @@ describe('DiscoverService.search', () => {
         expect(result.success).toBe(false);
         expect(result.error).toContain('failed with status: error');
     });
+
+    test('failed result keeps data/results as an empty array (never null)', async () => {
+        mockRequestSequence([
+            { statusCode: 200, body: JSON.stringify({ task_id: 'task_fail' }) },
+            { statusCode: 200, body: JSON.stringify({ status: 'failed' }) },
+        ]);
+
+        const result = await service.search('test');
+        expect(result.success).toBe(false);
+        expect(result.data).toEqual([]);
+        expect(result.results).toEqual([]);
+        // documented usage must not throw on failure
+        expect(() => {
+            for (const _ of result) void _;
+        }).not.toThrow();
+    });
+
+    test('surfaces server-provided error detail on failure', async () => {
+        mockRequestSequence([
+            { statusCode: 200, body: JSON.stringify({ task_id: 'task_fail' }) },
+            {
+                statusCode: 200,
+                body: JSON.stringify({
+                    status: 'error',
+                    error: 'quota exceeded',
+                }),
+            },
+        ]);
+
+        const result = await service.search('test');
+        expect(result.success).toBe(false);
+        expect(result.error).toContain('quota exceeded');
+    });
 });
 
 // --- DiscoverJob ---
@@ -286,5 +319,29 @@ describe('DiscoverResult', () => {
         expect(result.durationSeconds).toBeNull();
         expect(result.totalResults).toBeNull();
         expect(result.taskId).toBeNull();
+    });
+
+    test('data and results default to an empty array when omitted', () => {
+        const result = new DiscoverResult({ success: false, query: 'q' });
+        expect(result.data).toEqual([]);
+        expect(result.results).toEqual([]);
+    });
+
+    test('.results aliases .data', () => {
+        const items = [
+            { link: 'https://x.com', title: 'X', description: 'd', relevance_score: 0.8 },
+        ];
+        const result = new DiscoverResult({ success: true, data: items, query: 'q' });
+        expect(result.results).toBe(result.data);
+        expect(result.results).toEqual(items);
+    });
+
+    test('is iterable over its items', () => {
+        const items = [
+            { link: 'https://a.com', title: 'A', description: 'd', relevance_score: 1 },
+            { link: 'https://b.com', title: 'B', description: 'd', relevance_score: 0.5 },
+        ];
+        const result = new DiscoverResult({ success: true, data: items, query: 'q' });
+        expect([...result]).toEqual(items);
     });
 });

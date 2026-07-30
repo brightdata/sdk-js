@@ -8,5 +8,7 @@ export interface DiscoverOperations {
         status: string;
         results?: unknown[];
         duration_seconds?: number;
+        error?: string;
+        message?: string;
     }>;
 }
