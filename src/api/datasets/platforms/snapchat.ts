@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class SnapchatPostsDataset extends BaseDataset {
     readonly datasetId = 'gd_ma0ydx431w6stl16ge';

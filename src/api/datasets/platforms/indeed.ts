@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class IndeedCompaniesDataset extends BaseDataset {
     readonly datasetId = 'gd_l7qekxkv2i7ve6hx1s';

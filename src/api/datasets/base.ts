@@ -1,14 +1,14 @@
-import { Transport, assertResponse } from '../../core/transport';
-import { API_ENDPOINT } from '../../utils/constants';
-import { parseJSON } from '../../utils/misc';
-import { getLogger } from '../../utils/logger';
-import { pollUntilReady } from '../../utils/polling';
+import { Transport, assertResponse } from '../../core/transport.js';
+import { API_ENDPOINT } from '../../utils/constants.js';
+import { parseJSON } from '../../utils/misc.js';
+import { getLogger } from '../../utils/logger.js';
+import { pollUntilReady } from '../../utils/polling.js';
 import type {
     DatasetMetadata,
     DatasetSnapshotStatus,
     DatasetDownloadOptions,
     DatasetQueryOptions,
-} from './types';
+} from './types.js';
 
 export abstract class BaseDataset {
     abstract readonly datasetId: string;

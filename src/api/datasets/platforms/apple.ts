@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class AppleAppStoreDataset extends BaseDataset {
     readonly datasetId = 'gd_lsk9ki3u2iishmwrui';

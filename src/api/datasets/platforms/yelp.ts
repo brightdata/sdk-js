@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class YelpBusinessesDataset extends BaseDataset {
     readonly datasetId = 'gd_lgugwl0519h1p14rwk';

@@ -5,17 +5,17 @@ import type {
     UnknownRecord,
     InstagramDiscoverPostsByProfileURLFilter,
     InstagramDiscoverReelsByProfileURLFilter,
-} from '../../types/datasets';
+} from '../../types/datasets.js';
 import {
     DatasetOptionsSchema,
     DatasetMixedInputSchema,
-} from '../../schemas/datasets';
+} from '../../schemas/datasets.js';
 import {
     InstagramDiscoverPostsByProfileURLFilterSchema,
     InstagramDiscoverReelsByProfileURLFilterSchema,
-} from '../../schemas/filters/instagram';
-import { assertSchema } from '../../schemas/utils';
-import { BaseAPI, type BaseAPIOptions } from './base';
+} from '../../schemas/filters/instagram.js';
+import { assertSchema } from '../../schemas/utils.js';
+import { BaseAPI, type BaseAPIOptions } from './base.js';
 
 const DATASET_ID = {
     PROFILE: 'gd_l1vikfch901nx3by4',

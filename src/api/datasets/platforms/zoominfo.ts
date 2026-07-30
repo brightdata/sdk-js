@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class ZoomInfoCompaniesDataset extends BaseDataset {
     readonly datasetId = 'gd_m0ci4a4ivx3j5l6nx';

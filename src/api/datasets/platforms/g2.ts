@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class G2ProductsDataset extends BaseDataset {
     readonly datasetId = 'gd_l88xp4k01qnhvyqlvw';

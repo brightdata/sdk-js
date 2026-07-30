@@ -1,4 +1,4 @@
-import { writeContent } from '../utils/files';
+import { writeContent } from '../utils/files.js';
 
 export interface BaseResultFields<T = unknown> {
     success: boolean;

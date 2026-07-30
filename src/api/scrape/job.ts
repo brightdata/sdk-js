@@ -1,16 +1,16 @@
-import { pollUntilReady, type PollOptions } from '../../utils/polling';
-import { DataNotReadyError, TimeoutError } from '../../utils/errors';
-import { sleep } from '../../utils/misc';
-import { getLogger } from '../../utils/logger';
+import { pollUntilReady, type PollOptions } from '../../utils/polling.js';
+import { DataNotReadyError, TimeoutError } from '../../utils/errors.js';
+import { sleep } from '../../utils/misc.js';
+import { getLogger } from '../../utils/logger.js';
 
 const logger = getLogger('scrape.job');
-import { ScrapeResult } from '../../models/result';
-import { Deadline } from '../../utils/deadline';
+import { ScrapeResult } from '../../models/result.js';
+import { Deadline } from '../../utils/deadline.js';
 import type {
     SnapshotOperations,
     SnapshotFetchOptions,
     SnapshotDownloadOptions,
-} from '../../types/datasets';
+} from '../../types/datasets.js';
 
 export class ScrapeJob {
     readonly snapshotId: string;

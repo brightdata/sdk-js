@@ -45,6 +45,7 @@ await client.close();
 - **Web Scraping** — Scrape any website using anti-bot detection bypass and proxy support
 - **Search Engine Results** — Google, Bing, and Yandex search with batch support
 - **Platform Scrapers** — Structured data collection from LinkedIn, Amazon, Instagram, TikTok, YouTube, Reddit, and more
+- **Crawl API** — Crawl any URL(s) and get every output format (markdown, HTML, text) bundled per page
 - **Discover API** — AI-powered web search with intent-based relevance ranking
 - **Scraper Studio** — Trigger and fetch results from custom scrapers built in Bright Data's Scraper Studio
 - **Browser API** — CDP WebSocket URLs for connecting Playwright, Puppeteer, or Selenium to Bright Data's cloud browsers
@@ -175,6 +176,28 @@ console.log(result.rowCount);
 ```
 
 **Available platforms:** `linkedin`, `amazon`, `instagram`, `tiktok`, `youtube`, `reddit`, `facebook`, `pinterest`, `chatGPT`, `digikey`, `perplexity`
+
+### Crawl API
+
+Crawl one or more URLs and get every output format (markdown, HTML, text) bundled per page.
+
+```javascript
+// Sync — single round-trip
+const result = await client.crawler.crawl('https://example.com');
+console.log(result.data[0].markdown);
+
+// Batch
+const result = await client.crawler.crawl([
+    'https://example.com',
+    'https://example.com/about',
+]);
+console.log(`${result.pageCount} pages`);
+
+// Async — trigger, poll, download
+const job = await client.crawler.trigger('https://example.com');
+const status = await client.crawler.status(job.snapshotId);
+const result = await client.crawler.download(job.snapshotId);
+```
 
 ### Discover API
 
@@ -326,9 +349,21 @@ console.log(`Saved to: ${filePath}`);
 
 ## Configuration
 
+### Runtime support
+
+Node.js (>= 20) is the supported and tested runtime. The SDK also runs under Bun without crashing, but with a real caveat: Bun's bundled `undici` provides only a bare-bones `Agent` (no `compose()`, no `close()`, no custom `dispatch`), and Bun's `request()`/`stream()` ignore the `dispatcher` option entirely, routing through Bun's own native HTTP client instead. In practice this means requests still succeed under Bun, but none of Transport's tuning — connection pooling, keep-alive, custom timeouts, automatic retry on 429/500/502/503/504, and DNS caching — has any effect there; Bun's own defaults apply instead. The SDK detects the missing capabilities automatically (never crashes construction or `close()`), rather than failing.
+
 ### API Token
 
 Get your API token from [Bright Data Control Panel](https://brightdata.com/cp/setting/users?=).
+
+**Already logged in with the CLI? The SDK works with no configuration.** If you've run `brightdata login` with the [Bright Data CLI](https://www.npmjs.com/package/@brightdata/cli), the SDK automatically picks up those stored credentials. The token is resolved in this order:
+
+1. `apiKey` passed to `new bdclient({ apiKey })`
+2. `BRIGHTDATA_API_TOKEN` (or `BRIGHTDATA_API_KEY`) environment variable
+3. Credentials stored by the CLI (`brightdata login`)
+
+If none are found, the client throws with instructions to log in or set a token.
 
 ### Environment Variables
 

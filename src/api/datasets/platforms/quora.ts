@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class QuoraPostsDataset extends BaseDataset {
     readonly datasetId = 'gd_lvz1rbj81afv3m6n5y';

@@ -1,5 +1,5 @@
-export { DiscoverService } from './service';
-export { DiscoverResult } from './result';
-export { DiscoverJob } from './job';
-export type { DiscoverResultItem, DiscoverResultFields } from './result';
-export type { DiscoverPollOptions } from './job';
+export { DiscoverService } from './service.js';
+export { DiscoverResult } from './result.js';
+export { DiscoverJob } from './job.js';
+export type { DiscoverResultItem, DiscoverResultFields } from './result.js';
+export type { DiscoverPollOptions } from './job.js';

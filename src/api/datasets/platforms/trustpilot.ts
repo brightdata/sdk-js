@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class TrustpilotReviewsDataset extends BaseDataset {
     readonly datasetId = 'gd_lm5zmhwd2sni130p';

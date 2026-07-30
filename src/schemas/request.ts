@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { DEFAULT_CONCURRENCY } from '../utils/constants';
-import { ZoneNameSchema } from './shared';
+import { DEFAULT_CONCURRENCY } from '../utils/constants.js';
+import { ZoneNameSchema } from './shared.js';
 
 export const RequestOptionsBaseSchema = z.object({
     zone: ZoneNameSchema.optional(),

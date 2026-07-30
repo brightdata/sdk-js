@@ -1,5 +1,5 @@
-import { BRDError } from '../utils/errors';
-import { getLogger } from '../utils/logger';
+import { BRDError } from '../utils/errors.js';
+import { getLogger } from '../utils/logger.js';
 
 const logger = getLogger('rate-limiter');
 

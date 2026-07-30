@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class ZaraProductsDataset extends BaseDataset {
     readonly datasetId = 'gd_lct4vafw1tgx27d4o0';

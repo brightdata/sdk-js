@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class AsosProductsDataset extends BaseDataset {
     readonly datasetId = 'gd_ldbg7we91cp53nr2z4';

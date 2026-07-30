@@ -1,5 +1,5 @@
-import type { PollOptions } from '../utils/polling';
-import type { SnapshotStatusResponse } from '../schemas/responses';
+import type { PollOptions } from '../utils/polling.js';
+import type { SnapshotStatusResponse } from '../schemas/responses.js';
 
 export type {
     DatasetOptionsSync,
@@ -8,16 +8,36 @@ export type {
     DiscoverOptions,
     SnapshotDownloadOptions,
     SnapshotFetchOptions,
-} from '../schemas/datasets';
+} from '../schemas/datasets.js';
 
 export type SnapshotFormat = 'json' | 'ndjson' | 'jsonl' | 'csv';
 
 export type {
     SnapshotMeta,
     SnapshotStatusResponse,
-} from '../schemas/responses';
+} from '../schemas/responses.js';
 
-export type SnapshotStatus = SnapshotStatusResponse['status'];
+/**
+ * Known snapshot lifecycle values at time of writing. The API owns this
+ * vocabulary and may add new lifecycle values over time (see
+ * `SnapshotStatusResponseSchema`), so `SnapshotStatus` below stays an "open"
+ * union rather than this closed list.
+ */
+type KnownSnapshotStatus =
+    | 'running'
+    | 'ready'
+    | 'failed'
+    | 'cancelled'
+    | 'error';
+
+/**
+ * Snapshot status string. Validated at runtime only as a non-empty string
+ * (the API can introduce new statuses without an SDK release), but typed as
+ * an open union — `KnownSnapshotStatus | (string & {})` — instead of a bare
+ * `string`, so editors still autocomplete/surface the currently known values
+ * without rejecting values TypeScript can't see coming from the API.
+ */
+export type SnapshotStatus = KnownSnapshotStatus | (string & {});
 
 /**
  * Interface for snapshot operations needed by ScrapeJob.
@@ -29,11 +49,11 @@ export interface SnapshotOperations {
     getStatus(snapshotId: string): Promise<SnapshotStatusResponse>;
     fetch(
         snapshotId: string,
-        options?: import('../schemas/datasets').SnapshotFetchOptions,
+        options?: import('../schemas/datasets.js').SnapshotFetchOptions,
     ): Promise<unknown>;
     download(
         snapshotId: string,
-        options?: import('../schemas/datasets').SnapshotDownloadOptions,
+        options?: import('../schemas/datasets.js').SnapshotDownloadOptions,
     ): Promise<string>;
     cancel(snapshotId: string): Promise<void>;
 }
@@ -44,11 +64,11 @@ export interface UrlFilter extends UnknownRecord {
     url: string;
 }
 
-export type { ChatgptFilter } from '../schemas/filters/chatgpt';
+export type { ChatgptFilter } from '../schemas/filters/chatgpt.js';
 export type {
     LinkedinProfileFilter,
     LinkedinJobFilter,
-} from '../schemas/filters/linkedin';
+} from '../schemas/filters/linkedin.js';
 
 export type {
     AmazonCollectProductsFilter,
@@ -58,12 +78,12 @@ export type {
     AmazonDiscoverProductsByCategoryURLFilter,
     AmazonDiscoverProductsByKeywordFilter,
     AmazonDiscoverProductsByUPCFilter,
-} from '../schemas/filters/amazon';
+} from '../schemas/filters/amazon.js';
 
 export type {
     InstagramDiscoverPostsByProfileURLFilter,
     InstagramDiscoverReelsByProfileURLFilter,
-} from '../schemas/filters/instagram';
+} from '../schemas/filters/instagram.js';
 
 export type {
     FacebookCollectUserPostsFilter,
@@ -75,7 +95,7 @@ export type {
     FacebookDiscoverMarketplaceItemsByURLFilter,
     FacebookDiscoverEventsByURLFilter,
     FacebookDiscoverEventsByVenueFilter,
-} from '../schemas/filters/facebook';
+} from '../schemas/filters/facebook.js';
 
 /**
  * Options for one-call orchestration methods (products, reviews, etc.).

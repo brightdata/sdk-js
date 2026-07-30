@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class MantaBusinessesDataset extends BaseDataset {
     readonly datasetId = 'gd_l1vil1d81g0u8763b2';

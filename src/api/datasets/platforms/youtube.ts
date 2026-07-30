@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class YoutubeCommentsDataset extends BaseDataset {
     readonly datasetId = 'gd_lk9q0ew71spt1mxywf';

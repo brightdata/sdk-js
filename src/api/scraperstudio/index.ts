@@ -1,3 +1,3 @@
-export { ScraperStudioService } from './service';
-export { ScraperStudioJob } from './job';
-export type { ScraperStudioPollOptions } from './job';
+export { ScraperStudioService } from './service.js';
+export { ScraperStudioJob } from './job.js';
+export type { ScraperStudioPollOptions } from './job.js';

@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class TokopediaProductsDataset extends BaseDataset {
     readonly datasetId = 'gd_lxk24yba297r8qd3tp';

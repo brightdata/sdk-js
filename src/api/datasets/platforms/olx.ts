@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class OlxBrazilDataset extends BaseDataset {
     readonly datasetId = 'gd_lguvsr0wp4rx7fjfo';
