@@ -17,7 +17,27 @@ export type {
     SnapshotStatusResponse,
 } from '../schemas/responses.js';
 
-export type SnapshotStatus = SnapshotStatusResponse['status'];
+/**
+ * Known snapshot lifecycle values at time of writing. The API owns this
+ * vocabulary and may add new lifecycle values over time (see
+ * `SnapshotStatusResponseSchema`), so `SnapshotStatus` below stays an "open"
+ * union rather than this closed list.
+ */
+type KnownSnapshotStatus =
+    | 'running'
+    | 'ready'
+    | 'failed'
+    | 'cancelled'
+    | 'error';
+
+/**
+ * Snapshot status string. Validated at runtime only as a non-empty string
+ * (the API can introduce new statuses without an SDK release), but typed as
+ * an open union — `KnownSnapshotStatus | (string & {})` — instead of a bare
+ * `string`, so editors still autocomplete/surface the currently known values
+ * without rejecting values TypeScript can't see coming from the API.
+ */
+export type SnapshotStatus = KnownSnapshotStatus | (string & {});
 
 /**
  * Interface for snapshot operations needed by ScrapeJob.
