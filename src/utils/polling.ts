@@ -1,6 +1,6 @@
-import { BRDError, TimeoutError } from './errors';
-import { sleep } from './misc';
-import { getLogger } from './logger';
+import { BRDError, TimeoutError } from './errors.js';
+import { sleep } from './misc.js';
+import { getLogger } from './logger.js';
 
 const logger = getLogger('polling');
 
@@ -51,8 +51,12 @@ export async function pollUntilReady(
             );
             return;
         }
-        if (status === 'failed' || status === 'error') {
-            throw new BRDError(`${id} failed with status: ${status}`);
+        if (
+            status === 'failed' ||
+            status === 'error' ||
+            status === 'cancelled'
+        ) {
+            throw new BRDError(`${id} stopped with terminal status: ${status}`);
         }
 
         await sleep(interval);

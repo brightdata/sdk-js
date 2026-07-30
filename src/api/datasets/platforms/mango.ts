@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class MangoProductsDataset extends BaseDataset {
     readonly datasetId = 'gd_lcyua5iy1go06own9d';

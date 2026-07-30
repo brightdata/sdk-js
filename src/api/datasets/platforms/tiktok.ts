@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class TiktokProfilesDataset extends BaseDataset {
     readonly datasetId = 'gd_l1villgoiiidt09ci';

@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class EbayProductsDataset extends BaseDataset {
     readonly datasetId = 'gd_ltr9mjt81n0zzdk1fb';

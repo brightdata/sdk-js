@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ValidationError } from '../utils/errors';
+import { ValidationError } from '../utils/errors.js';
 
 export function assertSchema<K>(
     schema: z.ZodType<K>,

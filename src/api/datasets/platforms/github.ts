@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class GithubRepositoriesDataset extends BaseDataset {
     readonly datasetId = 'gd_lyrexgxc24b3d4imjt';

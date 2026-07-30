@@ -16,7 +16,7 @@ import {
     RETRY_STATUSES,
     RETRY_METHODS,
     RETRY_ERROR_CODES,
-} from '../utils/constants';
+} from '../utils/constants.js';
 import {
     APIError,
     AuthenticationError,
@@ -24,10 +24,11 @@ import {
     NetworkError,
     NetworkTimeoutError,
     ValidationError,
-} from '../utils/errors';
-import { getAuthHeaders } from '../utils/auth';
-import { getLogger, logRequest } from '../utils/logger';
-import { RateLimiter } from './rate-limiter';
+} from '../utils/errors.js';
+import { getAuthHeaders } from '../utils/auth.js';
+import type { AuthSource } from '../utils/cli-credentials.js';
+import { getLogger, logRequest } from '../utils/logger.js';
+import { RateLimiter } from './rate-limiter.js';
 
 const { dns, retry } = interceptors;
 
@@ -46,6 +47,7 @@ function isAbortTimeout(err: Error): boolean {
 
 export interface TransportOptions {
     apiKey: string;
+    authSource?: AuthSource;
     timeout?: number;
     connections?: number;
     rateLimit?: number;
@@ -87,28 +89,43 @@ export class Transport {
     };
 
     constructor(opts: TransportOptions) {
-        this.authHeaders = getAuthHeaders(opts.apiKey);
+        this.authHeaders = getAuthHeaders(opts.apiKey, opts.authSource);
         this.defaultTimeout = opts.timeout ?? DEFAULT_TIMEOUT;
         this.rateLimiter =
             opts.rateLimit && opts.rateLimit > 0
                 ? new RateLimiter(opts.rateLimit, opts.ratePeriod ?? 1000)
                 : null;
+        // Compose only the interceptors the runtime's undici actually provides.
+        // Bun's bundled undici ships a subset (redirect/retry/dump) and omits
+        // `dns`, so calling `dns()` there throws "dns is not a function" (#24).
+        // Detect by CAPABILITY (is it a function?), never by runtime name: this
+        // keeps `dns` on Node unchanged, skips it on Bun (undici falls back to
+        // platform DNS — requests still work), self-retires if Bun later ships
+        // `dns`, and degrades gracefully for any interceptor a future runtime
+        // omits, instead of crashing the constructor.
+        const interceptorChain = [
+            typeof dns === 'function' ? dns() : null,
+            typeof retry === 'function'
+                ? retry({
+                      maxRetries: MAX_RETRIES,
+                      timeoutFactor: RETRY_BACKOFF_FACTOR,
+                      statusCodes: RETRY_STATUSES,
+                      methods:
+                          RETRY_METHODS as unknown as Dispatcher.HttpMethod[],
+                      errorCodes: RETRY_ERROR_CODES,
+                  })
+                : null,
+        ].filter(
+            (i): i is Dispatcher.DispatcherComposeInterceptor => i !== null,
+        );
+
         this.agent = new Agent({
             connections: opts.connections ?? DEFAULT_CONNECTIONS,
             keepAliveTimeout: DEFAULT_KEEP_ALIVE_TIMEOUT,
             keepAliveMaxTimeout: DEFAULT_KEEP_ALIVE_MAX_TIMEOUT,
             headersTimeout: this.defaultTimeout,
             bodyTimeout: this.defaultTimeout,
-        }).compose(
-            dns(),
-            retry({
-                maxRetries: MAX_RETRIES,
-                timeoutFactor: RETRY_BACKOFF_FACTOR,
-                statusCodes: RETRY_STATUSES,
-                methods: RETRY_METHODS as unknown as Dispatcher.HttpMethod[],
-                errorCodes: RETRY_ERROR_CODES,
-            }),
-        );
+        }).compose(...interceptorChain);
         process.on('beforeExit', this.onBeforeExit);
     }
 

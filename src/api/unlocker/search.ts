@@ -9,11 +9,11 @@ import type {
     BatchRawResponse,
     SingleResponse,
     BatchResponse,
-} from '../../types/request';
-import { RequestAPI, type RequestAPIOptions } from './request';
-import { assertSchema } from '../../schemas/utils';
-import { SearchQueryParamSchema } from '../../schemas/client';
-import { SearchOptionsSchema } from '../../schemas/request';
+} from '../../types/request.js';
+import { RequestAPI, type RequestAPIOptions } from './request.js';
+import { assertSchema } from '../../schemas/utils.js';
+import { SearchQueryParamSchema } from '../../schemas/client.js';
+import { SearchOptionsSchema } from '../../schemas/request.js';
 
 const buildSERPUrl = (opt: SearchOptions, query: string) => {
     const q = encodeURIComponent(query.trim());

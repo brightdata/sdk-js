@@ -2,12 +2,12 @@ import {
     DataNotReadyError,
     NetworkError,
     TimeoutError,
-} from '../../utils/errors';
-import { sleep, parseJSON } from '../../utils/misc';
-import { Deadline } from '../../utils/deadline';
-import { getLogger } from '../../utils/logger';
-import { Transport, assertResponse } from '../../core/transport';
-import { API_ENDPOINT } from '../../utils/constants';
+} from '../../utils/errors.js';
+import { sleep, parseJSON } from '../../utils/misc.js';
+import { Deadline } from '../../utils/deadline.js';
+import { getLogger } from '../../utils/logger.js';
+import { Transport, assertResponse } from '../../core/transport.js';
+import { API_ENDPOINT } from '../../utils/constants.js';
 
 const logger = getLogger('scraperstudio.job');
 const MAX_NETWORK_RETRIES = 3;

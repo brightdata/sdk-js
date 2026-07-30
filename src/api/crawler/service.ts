@@ -1,19 +1,19 @@
-import { API_ENDPOINT } from '../../utils/constants';
-import { Transport, assertResponse } from '../../core/transport';
-import { parseResponse } from '../../utils/misc';
-import { getLogger } from '../../utils/logger';
-import { assertSchema } from '../../schemas/utils';
+import { API_ENDPOINT } from '../../utils/constants.js';
+import { Transport, assertResponse } from '../../core/transport.js';
+import { parseResponse } from '../../utils/misc.js';
+import { getLogger } from '../../utils/logger.js';
+import { assertSchema } from '../../schemas/utils.js';
 import {
     CrawlInputSchema,
     CrawlOptionsSchema,
     CrawlDownloadOptionsSchema,
     type CrawlOptions,
     type CrawlDownloadOptions,
-} from '../../schemas/crawler';
-import { SnapshotMetaResponseSchema } from '../../schemas/responses';
-import { ScrapeJob } from '../scrape/job';
-import { CrawlResult, type CrawlRecord } from './result';
-import type { SnapshotOperations } from '../../types/datasets';
+} from '../../schemas/crawler.js';
+import { SnapshotMetaResponseSchema } from '../../schemas/responses.js';
+import { ScrapeJob } from '../scrape/job.js';
+import { CrawlResult, type CrawlRecord } from './result.js';
+import type { SnapshotOperations } from '../../types/datasets.js';
 
 const DATASET_ID = 'gd_m6gjtfmeh43we6cqc';
 const PLATFORM = 'crawler';

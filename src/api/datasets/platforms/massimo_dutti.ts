@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class MassimoDuttiProductsDataset extends BaseDataset {
     readonly datasetId = 'gd_lcxf9r252p7e46ul5b';

@@ -1,36 +1,37 @@
-import { ScrapeAPI } from './api/unlocker/scrape';
-import { ZonesAPI } from './api/zones';
-import { ScrapeRouter } from './api/scrape/router';
-import { SearchRouter } from './api/search/router';
-import { DatasetsClient } from './api/datasets/client';
-import { DiscoverService } from './api/discover/service';
-import type { DiscoverResult } from './api/discover/result';
-import type { DiscoverJob } from './api/discover/job';
-import type { DiscoverOptions } from './schemas/discover';
-import { ScraperStudioService } from './api/scraperstudio/service';
-import { BrowserService } from './api/browser/service';
-import { CrawlerService } from './api/crawler/service';
-import { SnapshotAPI } from './api/scrape/snapshot';
-import { setup as setupLogger, getLogger } from './utils/logger';
+import { ScrapeAPI } from './api/unlocker/scrape.js';
+import { ZonesAPI } from './api/zones.js';
+import { ScrapeRouter } from './api/scrape/router.js';
+import { SearchRouter } from './api/search/router.js';
+import { DatasetsClient } from './api/datasets/client.js';
+import { DiscoverService } from './api/discover/service.js';
+import type { DiscoverResult } from './api/discover/result.js';
+import type { DiscoverJob } from './api/discover/job.js';
+import type { DiscoverOptions } from './schemas/discover.js';
+import { ScraperStudioService } from './api/scraperstudio/service.js';
+import { BrowserService } from './api/browser/service.js';
+import { CrawlerService } from './api/crawler/service.js';
+import { SnapshotAPI } from './api/scrape/snapshot.js';
+import { setup as setupLogger, getLogger } from './utils/logger.js';
 import {
     DEFAULT_WEB_UNLOCKER_ZONE,
     DEFAULT_SERP_ZONE,
-} from './utils/constants';
-import { ValidationError } from './utils/errors';
-import { maskKey } from './utils/misc';
-import { writeContent, stringifyResults, getFilename } from './utils/files';
-import { assertSchema } from './schemas/utils';
-import { ScrapeOptionsSchema } from './schemas/request';
+} from './utils/constants.js';
+import { ValidationError, AuthenticationError } from './utils/errors.js';
+import { readCliCredentials, type AuthSource } from './utils/cli-credentials.js';
+import { maskKey } from './utils/misc.js';
+import { writeContent, stringifyResults, getFilename } from './utils/files.js';
+import { assertSchema } from './schemas/utils.js';
+import { ScrapeOptionsSchema } from './schemas/request.js';
 import {
     URLParamSchema,
     ApiKeySchema,
     VerboseSchema,
     ClientOptionsSchema,
-} from './schemas/client';
-import { SaveOptionsSchema } from './schemas/misc';
-import { Transport } from './core/transport';
-import type { BdClientOptions, SaveOptions } from './types/client';
-import type { ZoneInfo } from './types/zones';
+} from './schemas/client.js';
+import { SaveOptionsSchema } from './schemas/misc.js';
+import { Transport } from './core/transport.js';
+import type { BdClientOptions, SaveOptions } from './types/client.js';
+import type { ZoneInfo } from './types/zones.js';
 import type {
     ScrapeJSONOptions,
     SingleJSONResponse,
@@ -39,7 +40,7 @@ import type {
     SingleRawResponse,
     BatchRawResponse,
     AnyResponse,
-} from './types/request';
+} from './types/request.js';
 
 function defineLazy<T>(obj: object, key: string, factory: () => T): void {
     Object.defineProperty(obj, key, {
@@ -107,6 +108,7 @@ export class bdclient {
         );
         const {
             BRIGHTDATA_API_TOKEN,
+            BRIGHTDATA_API_KEY,
             BRIGHTDATA_VERBOSE,
             BRIGHTDATA_WEB_UNLOCKER_ZONE,
             BRIGHTDATA_SERP_ZONE,
@@ -124,9 +126,33 @@ export class bdclient {
         setupLogger(opt.logLevel, opt.structuredLogging, isVerbose);
         this.logger.info('initializing Bright Data SDK client');
 
+        // Resolve the API token by precedence: param → env → CLI store → error,
+        // recording how it was obtained (authSource) for the User-Agent.
+        let resolved: string | undefined;
+        let authSource: AuthSource;
+        if (opt.apiKey) {
+            resolved = opt.apiKey.trim();
+            authSource = 'param';
+        } else if (BRIGHTDATA_API_TOKEN || BRIGHTDATA_API_KEY) {
+            // `||` (not `??`): an empty BRIGHTDATA_API_TOKEN falls through to KEY.
+            resolved = (BRIGHTDATA_API_TOKEN || BRIGHTDATA_API_KEY)!.trim();
+            authSource = 'env';
+        } else {
+            const cliKey = readCliCredentials();
+            if (cliKey) {
+                resolved = cliKey;
+                authSource = 'cli_credentials';
+            } else {
+                throw new AuthenticationError(
+                    'No API token found. Run `npx @brightdata/cli login` or set ' +
+                        'BRIGHTDATA_API_TOKEN. Get a token at ' +
+                        'https://brightdata.com/cp/api_tokens',
+                );
+            }
+        }
         const apiKey = assertSchema(
             ApiKeySchema,
-            opt.apiKey || BRIGHTDATA_API_TOKEN,
+            resolved,
             'bdclient.options.apiKey',
         );
 
@@ -135,6 +161,7 @@ export class bdclient {
 
         this.transport = new Transport({
             apiKey,
+            authSource,
             timeout: opt.timeout,
             rateLimit: opt.rateLimit,
             ratePeriod: opt.ratePeriod,

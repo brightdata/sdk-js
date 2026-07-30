@@ -46,6 +46,26 @@ describe('pollUntilReady', () => {
         ).rejects.toThrow(BRDError);
     });
 
+    test('throws BRDError when status is cancelled', async () => {
+        const getStatus = vi
+            .fn()
+            .mockResolvedValueOnce({ status: 'cancelled' });
+        await expect(
+            pollUntilReady('snap_123', getStatus, { pollInterval: 10 }),
+        ).rejects.toThrow(BRDError);
+    });
+
+    test('keeps polling through an unknown non-terminal status', async () => {
+        const getStatus = vi
+            .fn()
+            .mockResolvedValueOnce({ status: 'starting' })
+            .mockResolvedValueOnce({ status: 'collecting' })
+            .mockResolvedValueOnce({ status: 'ready' });
+
+        await pollUntilReady('snap_123', getStatus, { pollInterval: 10 });
+        expect(getStatus).toHaveBeenCalledTimes(3);
+    });
+
     test('calls onStatus callback on each poll', async () => {
         const getStatus = vi
             .fn()

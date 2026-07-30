@@ -1,9 +1,9 @@
-import { getLogger } from '../utils/logger';
-import { API_ENDPOINT } from '../utils/constants';
-import { parseJSON } from '../utils/misc';
-import { Transport, assertResponse } from '../core/transport';
-import { ZoneError, BRDError } from '../utils/errors';
-import type { ZoneInfo, ZoneInfoResponse } from '../types/zones';
+import { getLogger } from '../utils/logger.js';
+import { API_ENDPOINT } from '../utils/constants.js';
+import { parseJSON } from '../utils/misc.js';
+import { Transport, assertResponse } from '../core/transport.js';
+import { ZoneError, BRDError } from '../utils/errors.js';
+import type { ZoneInfo, ZoneInfoResponse } from '../types/zones.js';
 
 const logger = getLogger('api.zones');
 

@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class BhProductsDataset extends BaseDataset {
     readonly datasetId = 'gd_mkce0sox1mchrlpp8g';

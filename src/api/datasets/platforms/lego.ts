@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class LegoProductsDataset extends BaseDataset {
     readonly datasetId = 'gd_leenwt162rg85apy87';

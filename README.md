@@ -333,9 +333,21 @@ console.log(`Saved to: ${filePath}`);
 
 ## Configuration
 
+### Runtime support
+
+Node.js (>= 20) is the supported and tested runtime. The SDK also runs under Bun, with one caveat: Bun's bundled `undici` omits the optional `dns` interceptor, so DNS-caching is disabled there (requests fall back to the platform resolver and work normally). The SDK detects this automatically and skips the missing interceptor rather than failing.
+
 ### API Token
 
 Get your API token from [Bright Data Control Panel](https://brightdata.com/cp/setting/users?=).
+
+**Already logged in with the CLI? The SDK works with no configuration.** If you've run `brightdata login` with the [Bright Data CLI](https://www.npmjs.com/package/@brightdata/cli), the SDK automatically picks up those stored credentials. The token is resolved in this order:
+
+1. `apiKey` passed to `new bdclient({ apiKey })`
+2. `BRIGHTDATA_API_TOKEN` (or `BRIGHTDATA_API_KEY`) environment variable
+3. Credentials stored by the CLI (`brightdata login`)
+
+If none are found, the client throws with instructions to log in or set a token.
 
 ### Environment Variables
 

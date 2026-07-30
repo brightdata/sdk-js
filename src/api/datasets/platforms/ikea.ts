@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class IkeaProductsDataset extends BaseDataset {
     readonly datasetId = 'gd_le2lfu10qrjmrqo60';

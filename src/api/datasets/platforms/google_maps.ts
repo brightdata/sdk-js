@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class GoogleMapsFullInfoDataset extends BaseDataset {
     readonly datasetId = 'gd_m8ebnr0q2qlklc02fz';

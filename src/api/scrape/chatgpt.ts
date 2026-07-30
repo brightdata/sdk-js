@@ -2,14 +2,14 @@ import type {
     DatasetOptions,
     OrchestrateOptions,
     ChatgptFilter,
-} from '../../types/datasets';
+} from '../../types/datasets.js';
 import {
     DatasetOptionsSchema,
     ChatGPTInputSchema,
-} from '../../schemas/datasets';
-import { ChatgptFilterSchema } from '../../schemas/filters/chatgpt';
-import { assertSchema } from '../../schemas/utils';
-import { BaseAPI, type BaseAPIOptions } from './base';
+} from '../../schemas/datasets.js';
+import { ChatgptFilterSchema } from '../../schemas/filters/chatgpt.js';
+import { assertSchema } from '../../schemas/utils.js';
+import { BaseAPI, type BaseAPIOptions } from './base.js';
 
 const DATASET_ID = {
     CHATGPT: 'gd_m7aof0k82r803d5bjm',

@@ -1,4 +1,4 @@
-import { BaseResult, type BaseResultFields } from '../../models/result';
+import { BaseResult, type BaseResultFields } from '../../models/result.js';
 
 export interface CrawlRecord {
     url?: string;

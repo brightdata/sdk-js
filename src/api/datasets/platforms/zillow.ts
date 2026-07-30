@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class ZillowPriceHistoryDataset extends BaseDataset {
     readonly datasetId = 'gd_lxu1cz9r88uiqsosl';

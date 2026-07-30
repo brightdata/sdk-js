@@ -1,24 +1,24 @@
 import type { Dispatcher } from 'undici';
-import { API_ENDPOINT } from '../../utils/constants';
-import { DataNotReadyError } from '../../utils/errors';
-import { assertResponse, throwInvalidStatus } from '../../core/transport';
+import { API_ENDPOINT } from '../../utils/constants.js';
+import { DataNotReadyError } from '../../utils/errors.js';
+import { assertResponse, throwInvalidStatus } from '../../core/transport.js';
 import {
     routeDownloadStream,
     getFilename,
     getAbsAndEnsureDir,
-} from '../../utils/files';
-import { parseJSON, parseResponse } from '../../utils/misc';
-import { pollUntilReady } from '../../utils/polling';
+} from '../../utils/files.js';
+import { parseJSON, parseResponse } from '../../utils/misc.js';
+import { pollUntilReady } from '../../utils/polling.js';
 import type { z } from 'zod';
 import {
     SnapshotIdSchema,
     SnapshotDownloadOptionsSchema,
     SnapshotFetchOptionsSchema,
-} from '../../schemas/datasets';
-import type { SnapshotDownloadOptions, SnapshotFetchOptions } from '../../schemas/datasets';
-import { assertSchema } from '../../schemas/utils';
-import { SnapshotStatusResponseSchema } from '../../schemas/responses';
-import { BaseAPI, BaseAPIOptions } from './base';
+} from '../../schemas/datasets.js';
+import type { SnapshotDownloadOptions, SnapshotFetchOptions } from '../../schemas/datasets.js';
+import { assertSchema } from '../../schemas/utils.js';
+import { SnapshotStatusResponseSchema } from '../../schemas/responses.js';
+import { BaseAPI, BaseAPIOptions } from './base.js';
 
 const assertDownloadStatus = (status: number) => {
     if (status < 202) return;

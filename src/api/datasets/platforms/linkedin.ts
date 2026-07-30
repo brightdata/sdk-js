@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class LinkedinProfilesDataset extends BaseDataset {
     readonly datasetId = 'gd_l1viktl72bvl7bjuj0';

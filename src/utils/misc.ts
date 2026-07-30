@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { getLogger } from './logger';
-import { APIError } from './errors';
+import { getLogger } from './logger.js';
+import { APIError } from './errors.js';
 
 export function parseJSON<T>(data: string): T {
     try {

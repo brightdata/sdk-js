@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class VentureRadarCompaniesDataset extends BaseDataset {
     readonly datasetId = 'gd_l1vilsfd1xpsndbtpr';

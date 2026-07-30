@@ -1,4 +1,4 @@
-import { BaseDataset } from '../base';
+import { BaseDataset } from '../base.js';
 
 export class Inmuebles24MexicoDataset extends BaseDataset {
     readonly datasetId = 'gd_lfsa1vgv183347v45m';

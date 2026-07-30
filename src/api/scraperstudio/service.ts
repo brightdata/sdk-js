@@ -1,8 +1,8 @@
-import { Transport, assertResponse } from '../../core/transport';
-import { API_ENDPOINT } from '../../utils/constants';
-import { parseResponse } from '../../utils/misc';
-import { getLogger } from '../../utils/logger';
-import { assertSchema } from '../../schemas/utils';
+import { Transport, assertResponse } from '../../core/transport.js';
+import { API_ENDPOINT } from '../../utils/constants.js';
+import { parseResponse } from '../../utils/misc.js';
+import { getLogger } from '../../utils/logger.js';
+import { assertSchema } from '../../schemas/utils.js';
 import {
     CollectorIdSchema,
     ScraperStudioRunOptionsSchema,
@@ -11,8 +11,8 @@ import {
     type ScraperStudioRunOptions,
     type JobStatus,
     type RunResult,
-} from '../../schemas/scraperstudio';
-import { ScraperStudioJob } from './job';
+} from '../../schemas/scraperstudio.js';
+import { ScraperStudioJob } from './job.js';
 
 const logger = getLogger('scraperstudio');
 

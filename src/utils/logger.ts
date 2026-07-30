@@ -1,4 +1,4 @@
-import type { LOG_LEVEL } from '../types/client';
+import type { LOG_LEVEL } from '../types/client.js';
 
 let currentLogLevel: LOG_LEVEL = 'INFO';
 let isStructuredLogging = true;
