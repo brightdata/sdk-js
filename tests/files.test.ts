@@ -9,6 +9,12 @@ import { getAbsAndEnsureDir } from '../src/utils/files';
 import { BaseResult } from '../src/models/result';
 import { bdclient } from '../src/client';
 
+// fs.symlink() typically requires Developer Mode or admin rights on Windows,
+// unrelated to whether the containment fix itself works there — skip the
+// symlink-creating tests on win32 rather than fail on an environment
+// limitation.
+const isWindows = process.platform === 'win32';
+
 describe('FilenameSchema — allows safe subfolders, rejects traversal (CWE-22)', () => {
     it('allows a single relative subfolder', () => {
         expect(assertSchema(FilenameSchema, 'output/data.json')).toBe(
@@ -169,7 +175,7 @@ describe('getAbsAndEnsureDir — filesystem-level containment (CWE-22)', () => {
         }
     });
 
-    it('throws FSError when a subfolder is a symlink escaping baseDir', async () => {
+    it.skipIf(isWindows)('throws FSError when a subfolder is a symlink escaping baseDir', async () => {
         const outsideDir = await fs.realpath(
             await fs.mkdtemp(path.join(os.tmpdir(), 'brd-sdk-outside-')),
         );
@@ -241,7 +247,7 @@ describe('saveResults — path traversal protection', () => {
         await expect(fs.stat(malicious)).rejects.toThrow();
     });
 
-    it('rejects a symlink subfolder that escapes the working directory', async () => {
+    it.skipIf(isWindows)('rejects a symlink subfolder that escapes the working directory', async () => {
         const outsideDir = await fs.realpath(
             await fs.mkdtemp(path.join(os.tmpdir(), 'brd-sdk-outside-')),
         );
