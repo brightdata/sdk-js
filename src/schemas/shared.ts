@@ -1,4 +1,3 @@
-import path from 'node:path';
 import { z } from 'zod';
 
 export const ZoneNameSchema = z
@@ -17,12 +16,56 @@ export const ZoneNameSchema = z
         message: 'zone name cannot end with an underscore',
     });
 
-// Reduce to the final path segment before stripping reserved characters so
-// path-traversal sequences (../, absolute paths, alt-separators) cannot escape
-// the working directory once getAbsAndEnsureDir → path.resolve runs downstream.
-// path.basename only splits on the platform's native separator, so the regex
-// must still strip backslashes for POSIX hosts receiving Windows-shaped input.
+// Allow legitimate relative subfolders (e.g. "output/data.json") while still
+// refusing to escape the working directory. Unlike a blanket path.basename(),
+// this preserves directory structure the caller asked for and only rejects
+// genuinely dangerous input, with a clear error instead of a silent rewrite:
+//   - absolute paths (POSIX "/etc/x", Windows "C:\x" or UNC "\\host\share")
+//   - ".." segments anywhere in the path
+// Backslashes are always treated as separators (not just on Windows), so a
+// Windows-shaped traversal payload can't slip through on a POSIX host by
+// switching separator style. This is the lexical half of the defense; the
+// filesystem-level half (containment + symlink-escape check against the
+// actual write target) lives in utils/files.ts's getAbsAndEnsureDir, since
+// some callers (e.g. BaseResult.save()) accept a raw path that never passes
+// through this schema at all.
+const RESERVED_CHARS = /[<>:"|?*]/g;
+const ABSOLUTE_PATH = /^\/|^[a-zA-Z]:\//;
+
 export const FilenameSchema = z
     .string()
     .min(1)
-    .transform((v) => path.basename(v).replace(/[<>:"\\|?*]/g, '_'));
+    .transform((v, ctx) => {
+        const normalized = v.replace(/\\/g, '/');
+
+        if (ABSOLUTE_PATH.test(normalized)) {
+            ctx.addIssue({
+                code: 'custom',
+                message: 'absolute paths are not allowed in filename',
+            });
+            return z.NEVER;
+        }
+
+        const segments: string[] = [];
+        for (const raw of normalized.split('/')) {
+            if (raw === '' || raw === '.') continue;
+            if (raw === '..') {
+                ctx.addIssue({
+                    code: 'custom',
+                    message: 'filename must not contain ".." path segments',
+                });
+                return z.NEVER;
+            }
+            segments.push(raw.replace(RESERVED_CHARS, '_'));
+        }
+
+        if (segments.length === 0) {
+            ctx.addIssue({
+                code: 'custom',
+                message: 'filename must not be empty',
+            });
+            return z.NEVER;
+        }
+
+        return segments.join('/');
+    });
