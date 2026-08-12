@@ -3,10 +3,6 @@ import { ZonesAPI } from './api/zones.js';
 import { ScrapeRouter } from './api/scrape/router.js';
 import { SearchRouter } from './api/search/router.js';
 import { DatasetsClient } from './api/datasets/client.js';
-import { DiscoverService } from './api/discover/service.js';
-import type { DiscoverResult } from './api/discover/result.js';
-import type { DiscoverJob } from './api/discover/job.js';
-import type { DiscoverOptions } from './schemas/discover.js';
 import { ScraperStudioService } from './api/scraperstudio/service.js';
 import { BrowserService } from './api/browser/service.js';
 import { CrawlerService } from './api/crawler/service.js';
@@ -86,7 +82,6 @@ function defineLazy<T>(obj: object, key: string, factory: () => T): void {
  */
 export class bdclient {
     private _scrapeAPI: ScrapeAPI | null = null;
-    private _discoverService: DiscoverService | null = null;
     private zonesAPI: ZonesAPI;
     private transport: Transport;
     private autoCreateZones: boolean;
@@ -242,15 +237,6 @@ export class bdclient {
         return this._scrapeAPI;
     }
 
-    private get discoverService(): DiscoverService {
-        if (!this._discoverService) {
-            this._discoverService = new DiscoverService({
-                transport: this.transport,
-            });
-        }
-        return this._discoverService;
-    }
-
     /**
      * Scrape a single URL using Bright Data Web Unlocker API
      *
@@ -392,41 +378,6 @@ export class bdclient {
      */
     async listZones(): Promise<ZoneInfo[]> {
         return await this.zonesAPI.listZones();
-    }
-
-    /**
-     * Search the web with AI-powered relevance ranking.
-     * Triggers a search, polls until complete, returns results.
-     *
-     * @example
-     * ```javascript
-     * const result = await client.discover('AI trends 2026', {
-     *     intent: 'latest technology developments',
-     *     includeContent: true,
-     * });
-     * for (const item of result.data) {
-     *     console.log(`[${item.relevance_score}] ${item.title}`);
-     * }
-     * ```
-     */
-    async discover(query: string, opts?: DiscoverOptions): Promise<DiscoverResult> {
-        return this.discoverService.search(query, opts);
-    }
-
-    /**
-     * Trigger a discover search and return a job for manual polling.
-     *
-     * @example
-     * ```javascript
-     * const job = await client.discoverTrigger('market research SaaS', {
-     *     intent: 'competitor pricing',
-     * });
-     * await job.wait({ timeout: 60_000 });
-     * const data = await job.fetch();
-     * ```
-     */
-    async discoverTrigger(query: string, opts?: DiscoverOptions): Promise<DiscoverJob> {
-        return this.discoverService.trigger(query, opts);
     }
 
     async close(): Promise<void> {
