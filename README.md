@@ -46,7 +46,6 @@ await client.close();
 - **Search Engine Results** — Google, Bing, and Yandex search with batch support
 - **Platform Scrapers** — Structured data collection from LinkedIn, Amazon, Instagram, TikTok, YouTube, Reddit, and more
 - **Crawl API** — Crawl any URL(s) and get every output format (markdown, HTML, text) bundled per page
-- **Discover API** — AI-powered web search with intent-based relevance ranking
 - **Scraper Studio** — Trigger and fetch results from custom scrapers built in Bright Data's Scraper Studio
 - **Browser API** — CDP WebSocket URLs for connecting Playwright, Puppeteer, or Selenium to Bright Data's cloud browsers
 - **Datasets** — Access 126 pre-built datasets across dozens of platforms with query/download support
@@ -197,55 +196,6 @@ console.log(`${result.pageCount} pages`);
 const job = await client.crawler.trigger('https://example.com');
 const status = await client.crawler.status(job.snapshotId);
 const result = await client.crawler.download(job.snapshotId);
-```
-
-### Discover API
-
-AI-powered web search with relevance ranking based on intent.
-
-`discover()` resolves to a `DiscoverResult` wrapper (not a bare array). The items
-are on `result.data` (or its alias `result.results`), and the result is iterable.
-On failure `result.success` is `false`, `result.error` carries the reason, and
-`result.data` / `result.results` stay an empty array — so iterating never throws.
-
-```javascript
-// Basic search
-const result = await client.discover('artificial intelligence trends 2026');
-
-if (!result.success) {
-    console.error('discover failed:', result.error);
-} else {
-    console.log(result.results); // [{ link, title, description, relevance_score }, ...]
-    for (const item of result) {
-        console.log(`[${item.relevance_score}] ${item.title}`);
-    }
-}
-
-// With intent for semantic ranking
-const result = await client.discover('Tesla battery technology', {
-    intent: 'recent breakthroughs in EV battery chemistry',
-});
-
-// With filtering and localization
-const result = await client.discover('sustainable fashion brands', {
-    intent: 'eco-friendly clothing companies',
-    filterKeywords: ['sustainability', 'eco-friendly', 'organic'],
-    country: 'us',
-    numResults: 10,
-});
-
-// Include full page content
-const result = await client.discover('python asyncio tutorial', {
-    includeContent: true,
-    numResults: 3,
-});
-
-// Manual trigger/poll/fetch
-const job = await client.discoverTrigger('market research SaaS', {
-    intent: 'competitor pricing strategies',
-});
-await job.wait({ timeout: 60_000 });
-const data = await job.fetch();
 ```
 
 ### Scraper Studio
