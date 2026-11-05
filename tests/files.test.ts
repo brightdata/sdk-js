@@ -150,25 +150,34 @@ describe('getAbsAndEnsureDir — filesystem-level containment (CWE-22)', () => {
     });
 
     // FilenameSchema normally blocks this before getAbsAndEnsureDir ever sees
-    // it — but BaseResult.save() (see below) accepts a raw path that never
-    // passes through the schema, so this function must refuse *relative*
-    // traversal too.
+    // it — but BaseResult.save() (see below) passes a raw path that never goes
+    // through the schema, so this function must enforce containment itself,
+    // refusing *relative* traversal too.
     it('throws FSError when a raw relative path escapes baseDir via ".."', async () => {
         await expect(
             getAbsAndEnsureDir('../../../etc/passwd', baseDir),
         ).rejects.toThrow(FSError);
     });
 
-    it('honors an explicit absolute path outside baseDir (deliberate caller choice)', async () => {
-        // Unlike a relative path, an absolute input is a deliberate decision by
-        // the calling code (same trust model as fs.writeFile) — BaseResult.save()
-        // has always supported writing to an arbitrary absolute destination.
+    it('refuses an absolute path by default, but honors it with an explicit opt-in', async () => {
+        // An absolute input escapes baseDir. It is contained (refused) by default;
+        // a caller that deliberately wants an out-of-tree destination opts in with
+        // { allowAbsolute: true } (the same trust model as fs.writeFile).
         const outsideDir = await fs.realpath(
             await fs.mkdtemp(path.join(os.tmpdir(), 'brd-sdk-explicit-abs-')),
         );
         try {
             const explicitTarget = path.join(outsideDir, 'file.txt');
-            const target = await getAbsAndEnsureDir(explicitTarget, baseDir);
+
+            // Default: refused.
+            await expect(
+                getAbsAndEnsureDir(explicitTarget, baseDir),
+            ).rejects.toThrow(FSError);
+
+            // Opt-in: honored verbatim.
+            const target = await getAbsAndEnsureDir(explicitTarget, baseDir, {
+                allowAbsolute: true,
+            });
             expect(target).toBe(explicitTarget);
         } finally {
             await fs.rm(outsideDir, { recursive: true, force: true });
@@ -296,7 +305,7 @@ describe('saveResults — path traversal protection', () => {
     });
 });
 
-describe('BaseResult.save() — raw filepath never passes through FilenameSchema', () => {
+describe('BaseResult.save() — contained to the working directory by default', () => {
     let originalCwd: string;
     let tmpDir: string;
 
@@ -329,6 +338,45 @@ describe('BaseResult.save() — raw filepath never passes through FilenameSchema
         const saved = await result.save('out/nested-result.json');
 
         expect(saved).toBe(path.join(tmpDir, 'out', 'nested-result.json'));
+    });
+
+    it('accepts an absolute path that points inside the cwd', async () => {
+        const result = new BaseResult({ success: true, data: { ok: true } });
+        const target = path.resolve('abs', 'inside.json');
+        const saved = await result.save(target);
+
+        expect(saved).toBe(path.join(tmpDir, 'abs', 'inside.json'));
+    });
+
+    it('refuses an absolute path outside the cwd and writes nothing', async () => {
+        const result = new BaseResult({ success: true, data: { ok: true } });
+        const outsideDir = await fs.realpath(
+            await fs.mkdtemp(path.join(os.tmpdir(), 'brd-sdk-save-abs-')),
+        );
+        try {
+            const target = path.join(outsideDir, 'from-save.json');
+            await expect(result.save(target)).rejects.toThrow(FSError);
+            await expect(fs.stat(target)).rejects.toThrow();
+        } finally {
+            await fs.rm(outsideDir, { recursive: true, force: true });
+        }
+    });
+
+    it('writes to an absolute path with the explicit opt-in', async () => {
+        const result = new BaseResult({ success: true, data: 'payload' });
+        const outsideDir = await fs.realpath(
+            await fs.mkdtemp(path.join(os.tmpdir(), 'brd-sdk-save-abs-')),
+        );
+        try {
+            const target = path.join(outsideDir, 'from-save.txt');
+            const saved = await result.save(target, 'txt', {
+                allowAbsolute: true,
+            });
+            expect(saved).toBe(target);
+            expect(await fs.readFile(target, 'utf8')).toBe('payload');
+        } finally {
+            await fs.rm(outsideDir, { recursive: true, force: true });
+        }
     });
 });
 

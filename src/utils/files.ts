@@ -45,32 +45,33 @@ export const getFilename = (
 
 /**
  * Resolve `filename` against `baseDir` (default: cwd) and ensure its parent
- * directory exists — refusing to write outside `baseDir` for *relative*
- * inputs, while still honoring an explicit absolute path.
+ * directory exists, refusing to write outside `baseDir`.
  *
- * Some callers (e.g. `BaseResult.save()`) accept a raw path that never
- * passes through `FilenameSchema`, so containment can't be assumed to have
- * been checked already. But an absolute path is a deliberate choice by the
- * calling code (the same trust model as calling `fs.writeFile` directly) —
- * `.save()` is a general-purpose "write here" API, not a sanitized-filename
- * option, and has always accepted arbitrary absolute destinations. So
- * containment is only enforced for relative inputs, where escaping `baseDir`
- * (e.g. "../../etc/passwd") can only mean traversal, never an intentional
- * absolute destination. Two layers, both skipped for absolute input:
- *  1. Lexical containment — `path.resolve` the candidate and confirm it's
- *     still under `baseDir`. Cheap, catches the common cases, but is purely
+ * Writes are contained to `baseDir` by default, for relative and absolute
+ * paths alike: an absolute path inside `baseDir` is accepted, one outside it
+ * is refused unless the caller explicitly opts in with `allowAbsolute: true`.
+ * That opt-in restores the "write exactly here" behaviour (the same trust
+ * model as calling `fs.writeFile` directly) for callers that deliberately
+ * want an out-of-tree destination.
+ *
+ * Containment is enforced in two layers:
+ *  1. Lexical containment — `path.resolve` the candidate and confirm it's still
+ *     under `baseDir`. Cheap, catches the common cases, but is purely
  *     string-based and blind to symlinks.
- *  2. Real-path containment — after creating the parent directory, resolve
- *     both the real (symlink-free) parent and the real base, and re-check
+ *  2. Real-path containment — after creating the parent directory, resolve both
+ *     the real (symlink-free) parent and the real base, and re-check
  *     containment. This catches a subfolder that is (or contains) a symlink
  *     pointing outside `baseDir`, which layer 1 cannot see.
+ * Both layers are skipped only when an absolute path was explicitly allowed.
  */
 export const getAbsAndEnsureDir = async (
     filename: string,
     baseDir: string = process.cwd(),
+    options: { allowAbsolute?: boolean } = {},
 ): Promise<string> => {
     const resolvedBase = path.resolve(baseDir);
-    const isExplicitAbsolute = path.isAbsolute(filename);
+    const isExplicitAbsolute =
+        path.isAbsolute(filename) && !!options.allowAbsolute;
     const candidate = path.resolve(resolvedBase, filename);
 
     if (
@@ -79,7 +80,10 @@ export const getAbsAndEnsureDir = async (
         !candidate.startsWith(resolvedBase + path.sep)
     ) {
         throw new FSError(
-            `refusing to write outside the working directory: ${filename}`,
+            `refusing to write outside the working directory: ${filename}` +
+                (path.isAbsolute(filename)
+                    ? ' (pass { allowAbsolute: true } to allow)'
+                    : ''),
         );
     }
 
@@ -119,9 +123,13 @@ export const getAbsAndEnsureDir = async (
     return path.join(realParent, path.basename(candidate));
 };
 
-export const writeContent = async (content: string, filename: string) => {
+export const writeContent = async (
+    content: string,
+    filename: string,
+    options: { allowAbsolute?: boolean } = {},
+) => {
     try {
-        const target = await getAbsAndEnsureDir(filename);
+        const target = await getAbsAndEnsureDir(filename, undefined, options);
         logger.info(`writing ${target}`);
 
         await fs.writeFile(target, content, 'utf8');

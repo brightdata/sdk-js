@@ -26,9 +26,10 @@ export const ZoneNameSchema = z
 // Windows-shaped traversal payload can't slip through on a POSIX host by
 // switching separator style. This is the lexical half of the defense; the
 // filesystem-level half (containment + symlink-escape check against the
-// actual write target) lives in utils/files.ts's getAbsAndEnsureDir, since
-// some callers (e.g. BaseResult.save()) accept a raw path that never passes
-// through this schema at all.
+// actual write target) lives in utils/files.ts's getAbsAndEnsureDir, which
+// contains writes by default for callers that pass a raw path without this
+// schema (e.g. BaseResult.save()) — an absolute destination there requires an
+// explicit opt-in.
 const RESERVED_CHARS = /[<>:"|?*]/g;
 const ABSOLUTE_PATH = /^\/|^[a-zA-Z]:\//;
 

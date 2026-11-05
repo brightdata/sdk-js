@@ -155,7 +155,11 @@ describe('ScrapeResult', () => {
             data: [{ id: 1 }],
             platform: 'amazon',
         });
-        const filepath = await result.save(tmpFile);
+        // tmpFile is an absolute path; save() contains to cwd by default, so
+        // writing outside it requires the explicit opt-in.
+        const filepath = await result.save(tmpFile, 'json', {
+            allowAbsolute: true,
+        });
         expect(filepath).toContain('brd_test_result_');
         const content = JSON.parse(await fs.readFile(filepath, 'utf8'));
         expect(content.success).toBe(true);

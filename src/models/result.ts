@@ -57,15 +57,28 @@ export class BaseResult<T = unknown> {
         return this.toJSON();
     }
 
+    /**
+     * Write this result to a file.
+     *
+     * The destination is contained to the current working directory by default:
+     * a relative path is resolved under the cwd, and an absolute path is
+     * accepted only if it points inside the cwd. To write outside the cwd, opt
+     * in explicitly with `{ allowAbsolute: true }`.
+     *
+     * @param filepath - Destination path, inside the cwd unless `allowAbsolute`.
+     * @param format - 'json' (default) serializes the result; 'txt' writes `data`.
+     * @param options - `allowAbsolute: true` permits an absolute destination.
+     */
     async save(
         filepath: string,
         format: 'json' | 'txt' = 'json',
+        options: { allowAbsolute?: boolean } = {},
     ): Promise<string> {
         const content =
             format === 'json'
                 ? JSON.stringify(this.toJSON(), null, 2)
                 : String(this.data);
-        return writeContent(content, filepath);
+        return writeContent(content, filepath, options);
     }
 
     toString(): string {
