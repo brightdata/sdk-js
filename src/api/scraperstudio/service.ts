@@ -3,6 +3,7 @@ import { API_ENDPOINT } from '../../utils/constants.js';
 import { parseResponse } from '../../utils/misc.js';
 import { getLogger } from '../../utils/logger.js';
 import { assertSchema } from '../../schemas/utils.js';
+import { SafeIdSchema } from '../../schemas/shared.js';
 import {
     CollectorIdSchema,
     ScraperStudioRunOptionsSchema,
@@ -98,15 +99,17 @@ export class ScraperStudioService {
     }
 
     async status(jobId: string): Promise<JobStatus> {
-        assertSchema(
-            CollectorIdSchema,
+        // A job id is an opaque token spliced into the URL path — validate its
+        // shape (not just non-empty) before use, then encode it as a second layer.
+        const safeId = assertSchema(
+            SafeIdSchema,
             jobId,
             'scraperStudio.status.jobId',
         );
 
-        logger.info(`status: job ${jobId}`);
+        logger.info(`status: job ${safeId}`);
 
-        const url = `${API_ENDPOINT.DCA_LOG}/${jobId}`;
+        const url = `${API_ENDPOINT.DCA_LOG}/${encodeURIComponent(safeId)}`;
         const response = await this.transport.request(url, {});
         const responseTxt = await assertResponse(response);
         return parseResponse(

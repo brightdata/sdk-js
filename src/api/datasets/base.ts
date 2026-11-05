@@ -3,6 +3,8 @@ import { API_ENDPOINT } from '../../utils/constants.js';
 import { parseJSON } from '../../utils/misc.js';
 import { getLogger } from '../../utils/logger.js';
 import { pollUntilReady } from '../../utils/polling.js';
+import { assertSchema } from '../../schemas/utils.js';
+import { SnapshotIdSchema } from '../../schemas/datasets.js';
 import type {
     DatasetMetadata,
     DatasetSnapshotStatus,
@@ -68,10 +70,16 @@ export abstract class BaseDataset {
     }
 
     async getStatus(snapshotId: string): Promise<DatasetSnapshotStatus> {
-        this.logger.debug('getStatus', { snapshotId });
+        const safeId = assertSchema(
+            SnapshotIdSchema,
+            snapshotId,
+            'dataset.getStatus: invalid snapshot id',
+        );
+        this.logger.debug('getStatus', { snapshotId: safeId });
+        // Encode the (validated) id as a second layer before it enters the path.
         const url = API_ENDPOINT.DATASET_SNAPSHOT_STATUS.replace(
             '{snapshot_id}',
-            snapshotId,
+            encodeURIComponent(safeId),
         );
         const response = await this.transport.request(url);
         const text = await assertResponse(response);
@@ -82,11 +90,17 @@ export abstract class BaseDataset {
         snapshotId: string,
         opts?: DatasetDownloadOptions,
     ): Promise<unknown[]> {
-        this.logger.debug('download', { snapshotId });
-        await pollUntilReady(snapshotId, (id) => this.getStatus(id));
+        const safeId = assertSchema(
+            SnapshotIdSchema,
+            snapshotId,
+            'dataset.download: invalid snapshot id',
+        );
+        this.logger.debug('download', { snapshotId: safeId });
+        await pollUntilReady(safeId, (id) => this.getStatus(id));
+        // Encode the (validated) id as a second layer before it enters the path.
         const url = API_ENDPOINT.DATASET_SNAPSHOT_DOWNLOAD.replace(
             '{snapshot_id}',
-            snapshotId,
+            encodeURIComponent(safeId),
         );
         const query: Record<string, unknown> = {};
         if (opts?.format) query.format = opts.format;

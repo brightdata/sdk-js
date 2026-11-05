@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { FilenameSchema } from './shared.js';
+import { FilenameSchema, SafeIdSchema } from './shared.js';
 
 const SnapshotFormatSchema = z
     .enum(['json', 'csv', 'ndjson', 'jsonl'])
@@ -83,7 +83,10 @@ export const SnapshotFetchOptionsSchema = z.object({
 
 export type SnapshotFetchOptions = z.input<typeof SnapshotFetchOptionsSchema>;
 
-export const SnapshotIdSchema = z
-    .string()
-    .trim()
-    .min(3, 'snapshot id must be at least 3 characters long');
+// A snapshot id is an opaque token (see SafeIdSchema): shape-restricted so it can
+// be safely interpolated into a request URL path. The extra min(3) keeps the
+// existing, friendlier length message for the common too-short case.
+export const SnapshotIdSchema = SafeIdSchema.min(
+    3,
+    'snapshot id must be at least 3 characters long',
+);

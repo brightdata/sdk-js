@@ -107,7 +107,7 @@ export class SnapshotAPI extends BaseAPI {
         this.logger.info(`fetching snapshot status for id ${snapshotId}`);
         const url = API_ENDPOINT.SNAPSHOT_STATUS.replace(
             '{snapshot_id}',
-            snapshotId,
+            encodeURIComponent(snapshotId),
         );
 
         const response = await this.transport.request(url, {});
@@ -125,7 +125,7 @@ export class SnapshotAPI extends BaseAPI {
 
         const url = API_ENDPOINT.SNAPSHOT_DOWNLOAD.replace(
             '{snapshot_id}',
-            snapshotId,
+            encodeURIComponent(snapshotId),
         );
 
         const response = await this.transport.request(url, {
@@ -161,7 +161,7 @@ export class SnapshotAPI extends BaseAPI {
 
         const url = API_ENDPOINT.SNAPSHOT_DOWNLOAD.replace(
             '{snapshot_id}',
-            snapshotId,
+            encodeURIComponent(snapshotId),
         );
 
         if (options.statusPolling) {
@@ -211,7 +211,7 @@ export class SnapshotAPI extends BaseAPI {
         this.logger.info(`cancelling snapshot for id ${snapshotId}`);
         const url = API_ENDPOINT.SNAPSHOT_CANCEL.replace(
             '{snapshot_id}',
-            snapshotId,
+            encodeURIComponent(snapshotId),
         );
 
         const response = await this.transport.request(url, {
