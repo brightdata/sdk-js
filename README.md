@@ -177,6 +177,11 @@ console.log(result.rowCount);
 
 **Available platforms:** `linkedin`, `amazon`, `instagram`, `tiktok`, `youtube`, `reddit`, `facebook`, `pinterest`, `chatGPT`, `digikey`, `perplexity`
 
+**Standalone scraper repos:** ready-to-run Node.js projects built on this SDK, each with a CLI, examples and a daily live check:
+- [brightdata/instagram-scraper-node](https://github.com/brightdata/instagram-scraper-node): profiles, posts, reels and comments
+- [brightdata/linkedin-scraper-node](https://github.com/brightdata/linkedin-scraper-node): profiles, companies, jobs and posts
+- [brightdata/amazon-scraper-node](https://github.com/brightdata/amazon-scraper-node): products, reviews, sellers and search
+
 ### Crawl API
 
 Crawl one or more URLs and get every output format (markdown, HTML, text) bundled per page.
