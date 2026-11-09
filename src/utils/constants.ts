@@ -45,9 +45,6 @@ export const API_ENDPOINT = {
     SNAPSHOT_DELIVER: `${API_BASE_URL}/datasets/v3/deliver/{snapshot_id}`,
     SNAPSHOT_CANCEL: `${API_BASE_URL}/datasets/v3/snapshot/{snapshot_id}/cancel`,
 
-    // Discover API (AI-powered web search)
-    DISCOVER: `${API_BASE_URL}/discover`,
-
     // Scraper Studio / DCA (Data Collection Automation)
     DCA_TRIGGER: `${API_BASE_URL}/dca/trigger_immediate`,
     DCA_GET_RESULT: `${API_BASE_URL}/dca/get_result`,

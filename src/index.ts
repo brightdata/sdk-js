@@ -20,13 +20,6 @@ export type { BaseResultFields } from './models/result.js';
 export type * from './types/client.js';
 export type * from './types/request.js';
 export type * from './types/zones.js';
-export type * from './types/discover.js';
-
-// ── Discover ─────────────────────────────────────────────────────
-export { DiscoverResult } from './api/discover/result.js';
-export { DiscoverJob } from './api/discover/job.js';
-export type { DiscoverResultItem, DiscoverResultFields } from './api/discover/result.js';
-export type { DiscoverPollOptions } from './api/discover/job.js';
 
 // ── Crawler ──────────────────────────────────────────────────────
 export { CrawlerService } from './api/crawler/service.js';
