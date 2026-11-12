@@ -44,6 +44,7 @@ await client.close();
 
 - **Web Scraping** — Scrape any website using anti-bot detection bypass and proxy support
 - **Search Engine Results** — Google, Bing, and Yandex search with batch support
+- **Bright Search** — Direct Company, People, and E-commerce index searches
 - **Platform Scrapers** — Structured data collection from LinkedIn, Amazon, Instagram, TikTok, YouTube, Reddit, and more
 - **Crawl API** — Crawl any URL(s) and get every output format (markdown, HTML, text) bundled per page
 - **Discover API** — AI-powered web search with intent-based relevance ranking
@@ -120,6 +121,115 @@ const results = await client.search.google('pizza', {
 > **Note:** If `country` is not specified, requests exit through an arbitrary
 > proxy location, so results may be geo-located to an unexpected country.
 > Always pass `country` when you need consistent, localized results.
+
+### Bright Search
+
+Search indexed company, people and product records through the same client:
+
+The grouping matches the Python SDK: `search.business.companies()`,
+`search.business.people()`, and `search.ecommerce.products()`. JavaScript uses an
+options object as the second argument.
+
+```typescript
+const companies = await client.search.business.companies(
+    'US software companies with 50 to 500 employees',
+    { mode: 'instant', view: 'summary', limit: 10 },
+);
+
+const people = await client.search.business.people('Software engineers in Germany', {
+    mode: 'smart',
+    view: { fields: ['name', 'current_title'] },
+    limit: 5,
+    timeout: 30_000, // Local request timeout in milliseconds; not sent in the body
+});
+
+const products = await client.search.ecommerce.products(
+    { and: [{ equals: { retailer: 'Argos' } }, { equals: { sku: '4326522' } }] },
+    { mode: 'ludicrous', view: 'full' },
+);
+
+console.log(companies.reqId, companies.meta.coverage_percent);
+for (const document of companies.documents) {
+    console.log(document.bright_id, document.data.name); // Projected fields can be absent
+}
+```
+
+| Method under `client.search` | Modes and query | Default source |
+| --- | --- | --- |
+| `business.companies`, `business.people` | `ludicrous`: native JSON object; `instant`/`smart`: string | `linkedin_company`, `linkedin_people` |
+| `ecommerce.products` | `ludicrous`: native JSON object | `retail_products_live` |
+
+Mode is required. The server documents a 200-character natural-language query limit;
+the SDK forwards the original string without guessing its Unicode counting rule.
+Field names, operators and source strings are interpreted by the API. Native JSON
+is preserved; cycles, non-finite numbers, class instances and other values that
+JSON would silently change or discard are rejected before a request is sent.
+
+Omitting `source` and `view` leaves the server defaults in effect, including the
+`id_only` view. Company/People support `summary`, `full`, `id_only` and custom
+`{ fields: [...] }` views. The default E-commerce source supports `full`, `id_only`
+and custom fields; it does not support `summary`.
+
+Each call returns one `BrightSearchPage`. Its `raw` body keeps unknown fields,
+sparse data, nulls and the server's document order. `reqId`, `source`, `meta`,
+`documents` and `explain` read that body; `toJSON()` returns the same envelope
+reference. Mutations to `raw` are reflected in these accessors. Selected
+`responseHeaders` are separate and are not added to serialized page JSON.
+`meta.matched` is a reached count, generally a lower bound; interpret it alongside
+`coverage_percent`, not as a guaranteed total. Partial coverage does not establish
+that all matching records were searched.
+
+Paging defaults to `offset: 0`, `limit: 10`. Ludicrous allows limits up to 100 and
+offsets up to 1000. Instant allows limits up to 100; Smart allows up to 10. Both
+Instant and Smart require `offset + limit <= 100`, following the current
+[pagination contract](https://docs.brightdata.com/products/business-search/pagination).
+Request another page explicitly with a new offset. Each call is a fresh search
+against a changing index. Empty queries and zero limits are forwarded for server
+validation. The `ecommerce.products()` method sends requests to `/search/ecommerce`.
+
+Bright Search makes one HTTP attempt per call, without redirects, automatic
+retries, pagination, polling or zone creation. The shared client still owns
+credentials, rate limiting and connections; close it with `await client.close()`.
+Recovery is caller-controlled: a timeout does not establish whether work already
+ran. A functional Undici dispatcher is required; runtimes with stubbed dispatchers
+(including affected Bun versions) reject these calls before sending a request.
+
+For accounts with diagnostic access, `debug` explicitly forwards only `explain`,
+`benchmark`, `trace` and `__overrides__`. For example, `debug: { explain: true }`
+requests diagnostic output. Omitted controls stay absent; explicit false, zero
+and null values are preserved. Debug controls require account permission and
+their internal configuration is not a stable SDK schema.
+
+Failures use the existing SDK error families. HTTP 400 produces `ValidationError`,
+401/403 `AuthenticationError`, and other HTTP failures `APIError`. Available
+response details are on `error.context`:
+
+```typescript
+import { BRDError } from '@brightdata/sdk';
+
+try {
+    await client.search.business.companies('US software companies', { mode: 'instant' });
+} catch (error) {
+    if (error instanceof BRDError && error.context) {
+        console.error(error.context.statusCode, error.context.reqId);
+        console.error(error.context.responseHeaders['retry-after']); // Raw header value
+        // Full valid error data: context.responseText and context.responseJson
+    }
+    throw error;
+}
+```
+
+Known HTTP status and selected headers survive unreadable error bodies. Request
+identity is exposed only when available from valid UTF-8 JSON. Success-body read
+failures use `NetworkError`, or `NetworkTimeoutError` on timeout. Pre-response
+failures have no invented HTTP context. `BrightSearchPage`, `BrightSearchService`,
+`BusinessSearchService`, `EcommerceSearchService`, and the `BrightSearch*`
+request/response types are exported from both
+`@brightdata/sdk` and `@brightdata/sdk/search`.
+
+See [the TypeScript example](examples/bright-search.ts). Running it makes one real
+search using your configured credentials; offline tests do not run it. Actual
+category, source and diagnostic access depends on the deployed API and account.
 
 ### Platform scrapers
 

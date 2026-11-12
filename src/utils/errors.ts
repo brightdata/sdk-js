@@ -1,4 +1,17 @@
+/** Available response information; absent on errors without an HTTP response. */
+export interface HTTPResponseContext {
+    statusCode: number;
+    reqId?: string;
+    responseText?: string;
+    responseJson?: unknown;
+    responseHeaders: Record<string, string>;
+    url: string;
+    method: string;
+}
+
 export class BRDError extends Error {
+    declare context?: HTTPResponseContext;
+
     constructor(message: string, options?: ErrorOptions) {
         super(message, options);
         this.name = 'BRDError';
@@ -8,8 +21,26 @@ export class BRDError extends Error {
         return {
             name: this.name,
             message: this.message,
+            ...(this.context === undefined ? {} : { context: this.context }),
         };
     }
+}
+
+/** Attach only to a newly constructed response error, never a shared error. */
+export function withHTTPContext<T extends BRDError>(
+    error: T,
+    context: HTTPResponseContext,
+    cause?: unknown,
+): T {
+    error.context = context;
+    if (cause !== undefined && error.cause === undefined) {
+        Object.defineProperty(error, 'cause', {
+            value: cause,
+            configurable: true,
+            writable: true,
+        });
+    }
+    return error;
 }
 
 export class ValidationError extends BRDError {

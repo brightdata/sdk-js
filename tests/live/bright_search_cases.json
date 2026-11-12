@@ -1,0 +1,853 @@
+{
+  "schema_version": 1,
+  "name": "Bright Search JavaScript correctness and latency checks",
+  "description": "Forty cases adapted from the Python catalog: modes, views, sources, pagination, structured operators, ESM/CommonJS clients, API errors and local validation.",
+  "cases": [
+    {
+      "id": "company-ludicrous",
+      "group": "smoke",
+      "category": "company",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "and": [
+            {
+              "text": {
+                "industry": "software"
+              }
+            },
+            {
+              "equals": {
+                "headquarters_country_code": "US"
+              }
+            },
+            {
+              "range": {
+                "employees_in_linkedin": {
+                  ">=": 50,
+                  "<=": 500
+                }
+              }
+            }
+          ]
+        },
+        "view": "summary",
+        "limit": 3
+      },
+      "expect": {
+        "outcome": "success",
+        "source": "linkedin_company",
+        "min_documents": 1
+      }
+    },
+    {
+      "id": "company-instant",
+      "group": "smoke",
+      "category": "company",
+      "request": {
+        "mode": "instant",
+        "query": "US software companies with 50 to 500 employees",
+        "view": "summary",
+        "limit": 3
+      },
+      "expect": {
+        "outcome": "success",
+        "source": "linkedin_company",
+        "min_documents": 1
+      }
+    },
+    {
+      "id": "company-smart",
+      "group": "smoke",
+      "category": "company",
+      "request": {
+        "mode": "smart",
+        "query": "US software companies with 50 to 500 employees",
+        "view": "summary",
+        "limit": 3
+      },
+      "expect": {
+        "outcome": "success",
+        "source": "linkedin_company",
+        "min_documents": 1
+      }
+    },
+    {
+      "id": "people-ludicrous",
+      "group": "smoke",
+      "category": "people",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "and": [
+            {
+              "text": {
+                "role": "software engineer"
+              }
+            },
+            {
+              "equals": {
+                "country_code": "US"
+              }
+            }
+          ]
+        },
+        "view": "summary",
+        "limit": 3
+      },
+      "expect": {
+        "outcome": "success",
+        "source": "linkedin_people",
+        "min_documents": 1
+      }
+    },
+    {
+      "id": "people-instant",
+      "group": "smoke",
+      "category": "people",
+      "request": {
+        "mode": "instant",
+        "query": "Software engineers in the United States",
+        "view": "summary",
+        "limit": 3
+      },
+      "expect": {
+        "outcome": "success",
+        "source": "linkedin_people",
+        "min_documents": 1
+      }
+    },
+    {
+      "id": "people-smart",
+      "group": "smoke",
+      "category": "people",
+      "request": {
+        "mode": "smart",
+        "query": "Software engineers in the United States",
+        "view": "summary",
+        "limit": 3
+      },
+      "expect": {
+        "outcome": "success",
+        "source": "linkedin_people",
+        "min_documents": 1
+      }
+    },
+    {
+      "id": "ecom-ludicrous",
+      "group": "smoke",
+      "category": "ecommerce",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "range": {
+            "price": {
+              ">=": 0
+            }
+          }
+        },
+        "view": {
+          "fields": [
+            "name",
+            "retailer",
+            "sku",
+            "price"
+          ]
+        },
+        "limit": 3
+      },
+      "expect": {
+        "outcome": "success",
+        "source": "retail_products_live",
+        "min_documents": 1
+      }
+    },
+    {
+      "id": "ecom-argos-filter",
+      "group": "edge",
+      "category": "ecommerce",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "equals": {
+            "retailer": "Argos"
+          }
+        },
+        "view": {
+          "fields": [
+            "name",
+            "retailer",
+            "sku",
+            "price"
+          ]
+        },
+        "limit": 3
+      },
+      "expect": {
+        "outcome": "success",
+        "source": "retail_products_live"
+      }
+    },
+    {
+      "id": "company-page-two",
+      "group": "edge",
+      "category": "company",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "equals": {
+            "headquarters_country_code": "US"
+          }
+        },
+        "view": {
+          "fields": [
+            "name",
+            "website"
+          ]
+        },
+        "offset": 3,
+        "limit": 3
+      },
+      "expect": {
+        "outcome": "success",
+        "source": "linkedin_company"
+      }
+    },
+    {
+      "id": "ecom-empty-result",
+      "group": "edge",
+      "category": "ecommerce",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "and": [
+            {
+              "equals": {
+                "retailer": "Argos"
+              }
+            },
+            {
+              "equals": {
+                "sku": "sdk-absent-sku-073a03a8bb844c4aa4dd0ed37a90f44a"
+              }
+            }
+          ]
+        },
+        "limit": 1
+      },
+      "expect": {
+        "outcome": "success",
+        "source": "retail_products_live",
+        "max_documents": 0
+      }
+    },
+    {
+      "id": "company-invalid-field",
+      "group": "edge",
+      "category": "company",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "equals": {
+            "headquarters_country_code": "US"
+          }
+        },
+        "view": {
+          "fields": [
+            "__sdk_missing_field__"
+          ]
+        },
+        "limit": 1
+      },
+      "expect": {
+        "outcome": "api_error",
+        "status_code": 400
+      }
+    },
+    {
+      "id": "ecom-invalid-mode",
+      "group": "edge",
+      "category": "ecommerce",
+      "request": {
+        "mode": "instant",
+        "query": "Argos products",
+        "limit": 1
+      },
+      "expect": {
+        "outcome": "validation_error"
+      }
+    },
+    {
+      "id": "company-default-id-only",
+      "group": "extended",
+      "category": "company",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "equals": {
+            "headquarters_country_code": "US"
+          }
+        },
+        "limit": 1
+      },
+      "expect": {
+        "outcome": "success",
+        "min_documents": 1
+      }
+    },
+    {
+      "id": "people-default-id-only",
+      "group": "extended",
+      "category": "people",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "equals": {
+            "country_code": "US"
+          }
+        },
+        "limit": 1
+      },
+      "expect": {
+        "outcome": "success",
+        "min_documents": 1
+      }
+    },
+    {
+      "id": "ecommerce-default-id-only",
+      "group": "extended",
+      "category": "ecommerce",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "range": {
+            "price": {
+              ">=": 0
+            }
+          }
+        },
+        "limit": 1
+      },
+      "expect": {
+        "outcome": "success",
+        "min_documents": 1
+      }
+    },
+    {
+      "id": "company-full-explicit-source",
+      "group": "extended",
+      "category": "company",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "equals": {
+            "headquarters_country_code": "US"
+          }
+        },
+        "source": "linkedin_company",
+        "view": "full",
+        "limit": 1
+      },
+      "expect": {
+        "outcome": "success",
+        "min_documents": 1
+      }
+    },
+    {
+      "id": "people-full-explicit-source",
+      "group": "extended",
+      "category": "people",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "equals": {
+            "country_code": "US"
+          }
+        },
+        "source": "linkedin_people",
+        "view": "full",
+        "limit": 1
+      },
+      "expect": {
+        "outcome": "success",
+        "min_documents": 1
+      }
+    },
+    {
+      "id": "ecommerce-full-explicit-source",
+      "group": "extended",
+      "category": "ecommerce",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "range": {
+            "price": {
+              ">=": 0
+            }
+          }
+        },
+        "source": "retail_products_live",
+        "view": "full",
+        "limit": 1
+      },
+      "expect": {
+        "outcome": "success",
+        "min_documents": 1
+      }
+    },
+    {
+      "id": "company-custom-fields",
+      "group": "extended",
+      "category": "company",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "equals": {
+            "headquarters_country_code": "US"
+          }
+        },
+        "source": "linkedin_company",
+        "view": {
+          "fields": [
+            "name",
+            "website"
+          ]
+        },
+        "limit": 3
+      },
+      "expect": {
+        "outcome": "success",
+        "min_documents": 1
+      }
+    },
+    {
+      "id": "people-custom-fields",
+      "group": "extended",
+      "category": "people",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "equals": {
+            "country_code": "US"
+          }
+        },
+        "source": "linkedin_people",
+        "view": {
+          "fields": [
+            "name",
+            "current_title"
+          ]
+        },
+        "limit": 3
+      },
+      "expect": {
+        "outcome": "success",
+        "min_documents": 1
+      }
+    },
+    {
+      "id": "company-explicit-id-only",
+      "group": "extended",
+      "category": "company",
+      "request": {
+        "mode": "instant",
+        "query": "US software companies",
+        "view": "id_only",
+        "limit": 1
+      },
+      "expect": {
+        "outcome": "success",
+        "min_documents": 1
+      }
+    },
+    {
+      "id": "company-ludicrous-max-limit",
+      "group": "extended",
+      "category": "company",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "equals": {
+            "headquarters_country_code": "US"
+          }
+        },
+        "limit": 100
+      },
+      "expect": {
+        "outcome": "success"
+      }
+    },
+    {
+      "id": "people-instant-max-limit",
+      "group": "extended",
+      "category": "people",
+      "request": {
+        "mode": "instant",
+        "query": "Software engineers in the United States",
+        "offset": 0,
+        "limit": 100
+      },
+      "expect": {
+        "outcome": "success"
+      }
+    },
+    {
+      "id": "company-smart-window-end",
+      "group": "extended",
+      "category": "company",
+      "request": {
+        "mode": "smart",
+        "query": "US software companies with 50 to 500 employees",
+        "offset": 90,
+        "limit": 10
+      },
+      "expect": {
+        "outcome": "success"
+      }
+    },
+    {
+      "id": "ecommerce-max-limit-and-offset",
+      "group": "extended",
+      "category": "ecommerce",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "range": {
+            "price": {
+              ">=": 0
+            }
+          }
+        },
+        "offset": 1000,
+        "limit": 100
+      },
+      "expect": {
+        "outcome": "success"
+      }
+    },
+    {
+      "id": "people-instant-window-end",
+      "group": "extended",
+      "category": "people",
+      "request": {
+        "mode": "instant",
+        "query": "Software engineers in the United States",
+        "offset": 99,
+        "limit": 1
+      },
+      "expect": {
+        "outcome": "success"
+      }
+    },
+    {
+      "id": "company-country-membership",
+      "group": "extended",
+      "category": "company",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "in": {
+            "headquarters_country_code": [
+              "US",
+              "GB"
+            ]
+          }
+        },
+        "view": {
+          "fields": [
+            "name",
+            "headquarters_country_code"
+          ]
+        },
+        "limit": 3
+      },
+      "expect": {
+        "outcome": "success"
+      }
+    },
+    {
+      "id": "people-combined-conditions",
+      "group": "extended",
+      "category": "people",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "and": [
+            {
+              "text": {
+                "current_title": {
+                  "value": "software engineer",
+                  "mode": "all"
+                }
+              }
+            },
+            {
+              "or": [
+                {
+                  "equals": {
+                    "country_code": "US"
+                  }
+                },
+                {
+                  "equals": {
+                    "country_code": "GB"
+                  }
+                }
+              ]
+            },
+            {
+              "not": {
+                "equals": {
+                  "country_code": "ZZ"
+                }
+              }
+            }
+          ]
+        },
+        "view": {
+          "fields": [
+            "name",
+            "current_title",
+            "country_code"
+          ]
+        },
+        "limit": 3
+      },
+      "expect": {
+        "outcome": "success"
+      }
+    },
+    {
+      "id": "ecommerce-price-band",
+      "group": "extended",
+      "category": "ecommerce",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "range": {
+            "price": {
+              ">=": 10,
+              "<=": 50
+            }
+          }
+        },
+        "view": {
+          "fields": [
+            "name",
+            "retailer",
+            "price"
+          ]
+        },
+        "limit": 3
+      },
+      "expect": {
+        "outcome": "success"
+      }
+    },
+    {
+      "id": "company-cjs-smart",
+      "group": "extended",
+      "category": "company",
+      "request": {
+        "mode": "smart",
+        "query": "US software companies with 50 to 500 employees",
+        "view": "summary",
+        "limit": 3
+      },
+      "expect": {
+        "outcome": "success",
+        "source": "linkedin_company",
+        "min_documents": 1
+      },
+      "client": "cjs",
+      "python_case_id": "company-sync-smart"
+    },
+    {
+      "id": "people-cjs-instant",
+      "group": "extended",
+      "category": "people",
+      "request": {
+        "mode": "instant",
+        "query": "Software engineers in the United States",
+        "view": "summary",
+        "limit": 3
+      },
+      "expect": {
+        "outcome": "success",
+        "source": "linkedin_people",
+        "min_documents": 1
+      },
+      "client": "cjs",
+      "python_case_id": "people-sync-instant"
+    },
+    {
+      "id": "ecommerce-cjs-ludicrous",
+      "group": "extended",
+      "category": "ecommerce",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "range": {
+            "price": {
+              ">=": 0
+            }
+          }
+        },
+        "view": {
+          "fields": [
+            "name",
+            "retailer",
+            "sku",
+            "price"
+          ]
+        },
+        "limit": 3
+      },
+      "expect": {
+        "outcome": "success",
+        "source": "retail_products_live",
+        "min_documents": 1
+      },
+      "client": "cjs",
+      "python_case_id": "ecommerce-sync-ludicrous"
+    },
+    {
+      "id": "company-unknown-source",
+      "group": "extended",
+      "category": "company",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "equals": {
+            "headquarters_country_code": "US"
+          }
+        },
+        "source": "__sdk_missing_source__",
+        "limit": 1
+      },
+      "expect": {
+        "outcome": "api_error",
+        "status_code": 400
+      }
+    },
+    {
+      "id": "company-text-field-wrong-operator",
+      "group": "extended",
+      "category": "company",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "equals": {
+            "industry": "software"
+          }
+        },
+        "limit": 1
+      },
+      "expect": {
+        "outcome": "api_error",
+        "status_code": 400
+      }
+    },
+    {
+      "id": "company-query-too-long",
+      "group": "extended",
+      "category": "company",
+      "request": {
+        "mode": "instant",
+        "query": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "limit": 1
+      },
+      "expect": {
+        "outcome": "api_error",
+        "status_code": 400
+      }
+    },
+    {
+      "id": "company-smart-limit-too-large",
+      "group": "extended",
+      "category": "company",
+      "request": {
+        "mode": "smart",
+        "query": "US software companies",
+        "limit": 11
+      },
+      "expect": {
+        "outcome": "validation_error"
+      }
+    },
+    {
+      "id": "people-negative-offset",
+      "group": "extended",
+      "category": "people",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "equals": {
+            "country_code": "US"
+          }
+        },
+        "offset": -1,
+        "limit": 1
+      },
+      "expect": {
+        "outcome": "validation_error"
+      }
+    },
+    {
+      "id": "company-boolean-limit",
+      "group": "extended",
+      "category": "company",
+      "request": {
+        "mode": "ludicrous",
+        "query": {
+          "equals": {
+            "headquarters_country_code": "US"
+          }
+        },
+        "limit": true
+      },
+      "expect": {
+        "outcome": "validation_error"
+      }
+    },
+    {
+      "id": "company-instant-window-overflow",
+      "group": "extended",
+      "category": "company",
+      "request": {
+        "mode": "instant",
+        "query": "US software companies",
+        "offset": 90,
+        "limit": 11
+      },
+      "expect": {
+        "outcome": "validation_error"
+      }
+    },
+    {
+      "id": "company-smart-window-overflow",
+      "group": "extended",
+      "category": "company",
+      "request": {
+        "mode": "smart",
+        "query": "US software companies",
+        "offset": 91,
+        "limit": 10
+      },
+      "expect": {
+        "outcome": "validation_error"
+      }
+    }
+  ],
+  "provenance": {
+    "source_project": "sdk-python",
+    "source_file": "tests/live/bright_search_cases.json",
+    "sha256": "14a25d9008e2c20d63f7cf47c7bdcee228df64c1f8844b5a586ba2fa596cf411",
+    "adapted_on": "2026-11-12",
+    "adaptations": [
+      "Python sync cases exercise the JavaScript CommonJS client instead.",
+      "The 201-character query is a server-validation case: JavaScript deliberately forwards natural-language strings unchanged.",
+      "The ecommerce scenario category maps to the JavaScript search.ecommerce.products() method."
+    ]
+  }
+}
