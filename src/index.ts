@@ -11,6 +11,7 @@ export {
     APIError,
     DataNotReadyError,
 } from './utils/errors.js';
+export type { HTTPResponseContext } from './utils/errors.js';
 export { PACKAGE_VERSION as VERSION } from './utils/constants.js';
 export { bdclient } from './client.js';
 export { BaseResult } from './models/result.js';
@@ -25,7 +26,10 @@ export type * from './types/discover.js';
 // ── Discover ─────────────────────────────────────────────────────
 export { DiscoverResult } from './api/discover/result.js';
 export { DiscoverJob } from './api/discover/job.js';
-export type { DiscoverResultItem, DiscoverResultFields } from './api/discover/result.js';
+export type {
+    DiscoverResultItem,
+    DiscoverResultFields,
+} from './api/discover/result.js';
 export type { DiscoverPollOptions } from './api/discover/job.js';
 
 // ── Crawler ──────────────────────────────────────────────────────
