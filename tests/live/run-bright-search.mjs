@@ -147,9 +147,12 @@ export function selectCases(cases, group = 'all', ids = []) {
 }
 
 export async function loadSDKs() {
+    // Unit tests inject source SDKs and run before dist exists. Resolve the
+    // built package only when this standalone runner is actually invoked.
+    const entry = '@brightdata/sdk';
     return {
-        esm: await import('@brightdata/sdk'),
-        cjs: require('@brightdata/sdk'),
+        esm: await import(/* @vite-ignore */ entry),
+        cjs: require(entry),
     };
 }
 
