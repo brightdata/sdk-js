@@ -1,4 +1,9 @@
 import { SearchAPI } from '../unlocker/search.js';
+import { BrightSearchService } from '../brightsearch/service.js';
+import {
+    BusinessSearchService,
+    EcommerceSearchService,
+} from '../brightsearch/namespaces.js';
 import type { RequestAPIOptions } from '../unlocker/request.js';
 import type {
     SearchOptions,
@@ -15,9 +20,14 @@ type SearchMethodJSONOptions = Omit<SearchJSONOptions, 'searchEngine'>;
 
 export class SearchRouter {
     private searchAPI: SearchAPI;
+    readonly business: BusinessSearchService;
+    readonly ecommerce: EcommerceSearchService;
 
     constructor(opts: RequestAPIOptions) {
         this.searchAPI = new SearchAPI(opts);
+        const brightSearch = new BrightSearchService(opts.transport);
+        this.business = new BusinessSearchService(brightSearch);
+        this.ecommerce = new EcommerceSearchService(brightSearch);
     }
 
     // prettier-ignore

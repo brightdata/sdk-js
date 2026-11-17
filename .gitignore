@@ -95,6 +95,9 @@ logs
 test.mjs
 test.js
 
+# Account-specific Bright Search live verification reports
+tests/live/results/
+
 # Local-only agent context files (not for commit)
 CLAUDE.md
 AGENTS.md

@@ -94,6 +94,8 @@ export interface TransportRequestOptions {
     body?: string;
     query?: Record<string, unknown>;
     timeout?: number;
+    /** Internal operation policy: bypass retry and DNS redispatch interceptors. */
+    singleAttempt?: boolean;
 }
 
 export interface TransportStreamOptions {
@@ -106,6 +108,7 @@ export interface TransportStreamOptions {
 
 export class Transport {
     private agent: Dispatcher;
+    private baseAgent: Dispatcher;
     private authHeaders: Record<string, string>;
     private defaultTimeout: number;
     private rateLimiter: RateLimiter | null;
@@ -150,6 +153,7 @@ export class Transport {
             headersTimeout: this.defaultTimeout,
             bodyTimeout: this.defaultTimeout,
         });
+        this.baseAgent = rawAgent;
         // `.compose()` itself is missing on Bun's bundled undici (its `Agent` is a
         // bare, largely-inert stub — no `dispatch`/`close`/`destroy` either; Bun's
         // `request()`/`stream()` ignore the `dispatcher` option entirely and run
@@ -177,13 +181,22 @@ export class Transport {
                 'Transport is closed — cannot make requests after close() has been called',
             );
         }
-        const { timeout, ...restOpts } = opts;
+        const { timeout, singleAttempt, ...restOpts } = opts;
+        if (
+            singleAttempt &&
+            (typeof this.baseAgent.dispatch !== 'function' ||
+                typeof this.baseAgent.close !== 'function')
+        ) {
+            throw new BRDError(
+                'Bright Search requires a runtime with a functional Undici dispatcher for single-attempt requests',
+            );
+        }
         const mergedHeaders = { ...this.authHeaders, ...opts.headers };
 
         const requestOpts: Record<string, unknown> = {
             ...restOpts,
             headers: mergedHeaders,
-            dispatcher: this.agent,
+            dispatcher: singleAttempt ? this.baseAgent : this.agent,
         };
 
         if (timeout) {
@@ -318,21 +331,26 @@ export class Transport {
     }
 
     private classifyError(err: unknown): never {
-        if (err instanceof BRDError) throw err;
-        const e = err as Error;
-        if (TIMEOUT_ERROR_NAMES.has(e.name) || isAbortTimeout(e)) {
-            throw new NetworkTimeoutError(`Request timed out: ${e.message}`, {
-                cause: e,
-            });
-        }
-        if (e.name === 'RequestRetryError' && 'statusCode' in e) {
-            throwInvalidStatus(
-                (e as Error & { statusCode: number }).statusCode,
-                `retries exhausted: ${e.message}`,
-            );
-        }
-        throw new NetworkError(`Network error: ${e.message}`, { cause: e });
+        classifyTransportError(err);
     }
+}
+
+/** Also used when a service consumes a response body after request() returns. */
+export function classifyTransportError(err: unknown): never {
+    if (err instanceof BRDError) throw err;
+    const e = err as Error;
+    if (TIMEOUT_ERROR_NAMES.has(e.name) || isAbortTimeout(e)) {
+        throw new NetworkTimeoutError(`Request timed out: ${e.message}`, {
+            cause: e,
+        });
+    }
+    if (e.name === 'RequestRetryError' && 'statusCode' in e) {
+        throwInvalidStatus(
+            (e as Error & { statusCode: number }).statusCode,
+            `retries exhausted: ${e.message}`,
+        );
+    }
+    throw new NetworkError(`Network error: ${e.message}`, { cause: e });
 }
 
 export function throwInvalidStatus(status: number, responseTxt: string): never {

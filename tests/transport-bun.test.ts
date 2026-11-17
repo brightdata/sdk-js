@@ -60,5 +60,26 @@ describe('Transport under a Bun-shaped undici (no `compose`/`close`/`dns`)', () 
         expect(retry).toHaveBeenCalled();
         expect('dns' in undici.interceptors).toBe(false);
     });
-});
 
+    test('rejects strict requests before sending while preserving legacy fallback', async () => {
+        const request = vi.mocked(undici.request);
+        request.mockClear();
+        request.mockResolvedValue({ statusCode: 200 } as never);
+        const transport = new Transport({ apiKey: 'test-key' });
+        try {
+            await expect(
+                transport.request('https://example.test/search/company', {
+                    method: 'POST',
+                    singleAttempt: true,
+                }),
+            ).rejects.toThrow('functional Undici dispatcher');
+            expect(request).not.toHaveBeenCalled();
+            await expect(
+                transport.request('https://example.test/legacy'),
+            ).resolves.toMatchObject({ statusCode: 200 });
+            expect(request).toHaveBeenCalledOnce();
+        } finally {
+            await transport.close();
+        }
+    });
+});

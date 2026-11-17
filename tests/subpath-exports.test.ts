@@ -29,6 +29,10 @@ describe('subpath exports', () => {
         const search = await import('../src/search');
         expect(search.SearchRouter).toBeDefined();
         expect(search.SearchResult).toBeDefined();
+        expect(search.BrightSearchService).toBeDefined();
+        expect(search.BrightSearchPage).toBeDefined();
+        expect(search.BusinessSearchService).toBeDefined();
+        expect(search.EcommerceSearchService).toBeDefined();
     });
 
     test('@brightdata/sdk/datasets exports dataset symbols', async () => {
@@ -51,6 +55,10 @@ describe('subpath exports', () => {
         const search = await import('../src/search');
         expect(sdk.SearchRouter).toBe(search.SearchRouter);
         expect(sdk.SearchResult).toBe(search.SearchResult);
+        expect(sdk.BrightSearchService).toBe(search.BrightSearchService);
+        expect(sdk.BrightSearchPage).toBe(search.BrightSearchPage);
+        expect(sdk.BusinessSearchService).toBe(search.BusinessSearchService);
+        expect(sdk.EcommerceSearchService).toBe(search.EcommerceSearchService);
     });
 
     test('dataset symbols from root and subpath are identical', async () => {

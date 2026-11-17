@@ -48,6 +48,11 @@ export const API_ENDPOINT = {
     // Discover API (AI-powered web search)
     DISCOVER: `${API_BASE_URL}/discover`,
 
+    // Bright Search (indexed company, people and product records)
+    BRIGHT_SEARCH_COMPANY: `${API_BASE_URL}/search/company`,
+    BRIGHT_SEARCH_PEOPLE: `${API_BASE_URL}/search/people`,
+    BRIGHT_SEARCH_ECOM: `${API_BASE_URL}/search/ecommerce`,
+
     // Scraper Studio / DCA (Data Collection Automation)
     DCA_TRIGGER: `${API_BASE_URL}/dca/trigger_immediate`,
     DCA_GET_RESULT: `${API_BASE_URL}/dca/get_result`,
